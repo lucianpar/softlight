@@ -227,8 +227,10 @@ public:
           1.0, 0.6, 0.3,
           startingBodyAlpha); // Orange particles with alpha transparency
     }
+    bodyMesh.update();
     bodyMesh.primitive(al::Mesh::POINTS);
-    // bodyMesh.update();
+    // bodyMesh.scale(4.5);
+    bodyMesh.update();
 
     // Initialize attractor
     al::addSphere(attractorMesh, 10.0f, 100, 100);
@@ -240,7 +242,8 @@ public:
               << attractorMesh.vertices().size() << std::endl;
 
     // SET EFFEFCTS
-    bodyScatter.setBaseMesh(bodyMesh.vertices());
+    bodyScatter.setBaseMesh(
+        bodyMesh.vertices()); // can scale mesh in here if i want to
     bodyScatter.setParams(0.5, 20.0);
     bodyScatter.setScatterVector(bodyMesh);
     mainRippleX.setParams(4, 0.2, 4.0, 'y');
@@ -359,9 +362,9 @@ public:
     // boiler plate for every scene / main template
     if (running == true) {
       globalTime += dt;
-      std::cout << "glob time : " << globalTime << std::endl;
+      // time : " << globalTime << std::endl;
       sceneTime += dt;
-      if (globalTime <= 1.0) {
+      if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
         sceneIndex = 1;
         sceneTime = 0.0;
         sequencer1().playSequence();
@@ -423,10 +426,11 @@ public:
       }
 
       if (sceneTime >= stopSpeedUpEvent) {
-        attractorSpeedScene1 = 0.000001;
+        attractorSpeedScene1 = 0.00005;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
-        mainEffectChain.process(attractorMesh, sceneTime);
+        // mainEffectChain.process(attractorMesh, sceneTime); //ripple commented
+        // out
       }
 
       attractorMesh.update();
@@ -449,11 +453,13 @@ public:
                                     attractorSpeedScene1);
         bodyScatter.setParams(5.0, 20.0);
         bodyScatter.triggerIn(true);
-        // attractorMesh.scale(0.9995);
+        // attractorMesh.scale(0.998);
         attractorMesh.translate(
-            0, (-3.5) * 0.5 * ((sceneTime - moveInEvent) / (moveInEvent - 118)),
-            (4) * 0.5 * ((sceneTime - moveInEvent) / (moveInEvent - 118)));
-        // attractorMesh.scale(0.9999);
+            //     0, (3.5) * ((sceneTime - moveInEvent+0.1) / (30)),
+            //     (-4) * 0.5 * ((sceneTime - moveInEvent+0.1) / (moveInEvent -
+            //     118)));
+            // // attractorMesh.scale(0.9999);
+            0, 40.5 * 0.001, -80.0 * 0.001);
       }
 
       bodyEffectChain.process(bodyMesh, sceneTime);
