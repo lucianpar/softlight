@@ -74,6 +74,9 @@ class MyApp : public al::DistributedAppWithState<Common> {
   al::Spatializer *spatializer{nullptr};
   al::Speakers speakerLayout;
 
+  al::ParameterBool pRunning{"running"};
+  al::Parameter pTime{"time", "", 0.0, 0.0, 10000};
+  al::ParameterInt pIndex{"index", "", 0, 0, 100};
   //
 
 public:
@@ -148,6 +151,8 @@ public:
 
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
+
+    parameterServer() << pTime << pIndex << pRunning;
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
@@ -405,8 +410,10 @@ public:
     // boiler plate for every scene / main template
     if (!isPrimary()) {
       running = state().running;
+      running = pRunning.get();
     } else {
       state().running = running;
+      pRunning.set(running);
     }
 
     std::cout << "running : " << state().running << std::endl;
@@ -457,9 +464,13 @@ public:
 
         state().sceneIndex = sceneIndex;
         state().sceneTime = sceneTime;
+        pTime.set(sceneTime);
+        pIndex.set(sceneIndex);
       } else {
         sceneTime = state().sceneTime;
         sceneIndex = state().sceneIndex;
+        sceneTime = pTime.get();
+        sceneIndex = pIndex.get();
       }
       // end of boilerplate
 
