@@ -51,7 +51,7 @@ public:
   al::Vec3f reflectedTarget;
   float t{0};
   float a{0};
-  al::Parameter width{"Width", 0.2, 0, 0.2};
+  al::Parameter width{"Width", 0.01, 0, 0.2};
 
   // Meshes and Effects
 
