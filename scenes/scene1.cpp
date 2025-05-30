@@ -2,7 +2,7 @@
 #include "Gamma/Envelope.h"
 #include "Gamma/Oscillator.h"
 #include "Gamma/SamplePlayer.h"
-#include "al/app/al_App.hpp"
+#include "al/app/al_DistributedApp.hpp"
 #include "al/graphics/al_Graphics.hpp"
 #include "al/graphics/al_Light.hpp"
 #include "al/graphics/al_Mesh.hpp"
@@ -14,6 +14,7 @@
 #include "al/math/al_Vec.hpp"
 #include "al/scene/al_SynthSequencer.hpp"
 #include "al/sound/al_SoundFile.hpp"
+#include "al/sound/al_Spatializer.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 #include "al/ui/al_FileSelector.hpp"
 #include "al/ui/al_Parameter.hpp"
@@ -21,6 +22,13 @@
 #include "al_ext/assets3d/al_Asset.hpp"
 #include <iostream>
 #include <string>
+
+// spatial includes
+#include "al/sound/al_Ambisonics.hpp"
+#include "al/sound/al_Lbap.hpp"
+#include "al/sound/al_Speaker.hpp"
+#include "al/sound/al_Vbap.hpp"
+#include "al/sphere/al_AlloSphereSpeakerLayout.hpp"
 
 // MY CUSTOM INCLUDES:
 #include "../eoys-mesh-fx/ripple.hpp"
@@ -46,13 +54,18 @@ fix shader????
 fix ripple speed and scaling
 */
 
-class MyApp : public al::App {
-  // al::FileSelector selector;
+struct Common {};
+
+class MyApp : public al::DistributedAppWithState<Common> {
+  al::FileSelector selector;
   al::SearchPaths searchPaths;
-  // searchPaths.addSearchPath("..");
-  // al::SoundFileBuffered songPlayer;
-  // std::unique_ptr<float[]> audioBuffer;
-  // bool songPlaying = false;
+
+  ////spatial
+  //
+  al::Spatializer *spatializer{nullptr};
+  al::Speakers speakerLayout;
+
+  //
 
 public:
   // Global Time
@@ -126,6 +139,13 @@ public:
 
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
+
+    // SPATIAL STUFF
+    audioIO().channelsBus(1);
+    speakerLayout = al::AlloSphereSpeakerLayoutCompensated();
+    spatializer = new al::AmbisonicsSpatializer(speakerLayout, 3, 3, 1);
+
+    // FILE PATH STUFF
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
 
     al::FilePath objFP = searchPaths.find("BaseMesh.obj");
@@ -498,6 +518,10 @@ public:
   }
 
   void onSound(al::AudioIOData &io) override {
+    spatializer->prepare(io);
+    spatializer->renderBuffer(io, {0, 0, 0}, io.busBuffer(0),
+                              io.framesPerBuffer());
+    // spatializer->finalize(io);
     if (sceneIndex == 1) {
       mSequencer1.render(io);
     } else if (sceneIndex == 2) {
@@ -511,6 +535,7 @@ public:
     } else if (sceneIndex == 6) {
       mSequencer6.render(io);
     }
+    // spatializer->finalize(io);
   }
 
   al::SynthSequencer mSequencer1;
