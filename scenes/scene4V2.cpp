@@ -62,6 +62,7 @@ public:
   al::VAOMesh referenceMesh;
   Attractor referenceAttractor;
   al::VAOMesh sunMesh;
+  al::VAOMesh scene4ShellMesh;
   VertexEffectChain sunEffectChain;
   OrbitEffect sunOrbit1;
   OrbitEffect sunOrbit2;
@@ -69,7 +70,7 @@ public:
   // Global Time
   double globalTime = 0;
   double sceneTime = 0;
-  float pointSize = 1.0f; // Particle size
+  float pointSize = 5.0f; // Particle size
 
   void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
 
@@ -100,6 +101,12 @@ public:
     sunMesh.translate(0, 0, 5);
     sunMesh.primitive(al::Mesh::LINES);
     sunMesh.update();
+    al::addSphere(scene4ShellMesh, 10.0, 100, 100);
+    for (int i = 0; i < scene4ShellMesh.vertices().size(); i++) {
+      scene4ShellMesh.color(0.012, 0.369, 0.31);
+    }
+    scene4ShellMesh.primitive(al::Mesh::LINE_LOOP);
+    scene4ShellMesh.update();
 
     std::cout << "totalVerts: " << meshBall.vertices().size() * nAgentsScene4
               << std::endl;
@@ -148,8 +155,8 @@ public:
     }
 
     // sunEffectChain.process(sunMesh, sceneTime); // toggle orbiting
-    bigAttractor.processBlackHoleSpiral(sunMesh, dt, 1, 3);
-    sunMesh.update();
+    bigAttractor.processBlackHoleSpiral(scene4ShellMesh, dt, 1, 3);
+    scene4ShellMesh.update();
   }
 
   void onDraw(al::Graphics &g) override {
@@ -188,7 +195,8 @@ public:
       g.popMatrix();
     }
     g.meshColor();
-    g.draw(sunMesh);
+    // g.draw(sunMesh);
+    g.draw(scene4ShellMesh);
     // g.draw(referenceMesh);
     // g.draw(ribbon);
     // g.draw(reflectedRibbon);
