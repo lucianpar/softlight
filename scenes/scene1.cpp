@@ -15,6 +15,7 @@
 #include "al/scene/al_SynthSequencer.hpp"
 #include "al/sound/al_SoundFile.hpp"
 #include "al/sound/al_Spatializer.hpp"
+#include "al/sphere/al_SphereUtils.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 #include "al/ui/al_FileSelector.hpp"
 #include "al/ui/al_Parameter.hpp"
@@ -54,7 +55,11 @@ fix shader????
 fix ripple speed and scaling
 */
 
-struct Common {};
+struct Common {
+  double sceneTime;
+  int sceneIndex;
+  bool running;
+};
 
 class MyApp : public al::DistributedAppWithState<Common> {
   al::FileSelector selector;
@@ -142,8 +147,13 @@ public:
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
-    speakerLayout = al::AlloSphereSpeakerLayoutCompensated();
-    spatializer = new al::AmbisonicsSpatializer(speakerLayout, 3, 3, 1);
+    if (al::sphere::isSphereMachine())
+      speakerLayout = al::AlloSphereSpeakerLayoutCompensated();
+    else
+      speakerLayout = al::StereoSpeakerLayout();
+
+    spatializer = new al::AmbisonicsSpatializer(speakerLayout); //, 3, 1, 1);
+    spatializer->compile();
 
     // FILE PATH STUFF
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
@@ -300,6 +310,7 @@ public:
       sceneIndex = 1;
       globalTime = 0.0;
       sceneTime = 0.0;
+      running = true;
       std::cout << "scene index: " << 1 << "global time: " << globalTime
                 << std::endl;
 
@@ -380,45 +391,60 @@ public:
   // }
   void onAnimate(double dt) override {
     // boiler plate for every scene / main template
-    if (running == true) {
-      globalTime += dt;
-      // time : " << globalTime << std::endl;
-      sceneTime += dt;
-      if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
-        sceneIndex = 1;
-        sceneTime = 0.0;
-        sequencer1().playSequence();
-        std::cout << "started scene 1" << std::endl;
-      } else if (globalTime >= 119.0 &&
-                 globalTime <
-                     119.0 + dt) { // boolean && solution checking was llm idea
-        // https://chatgpt.com/g/g-p-6821791853348191b683bea2cf85363d-softlight-sphere-project/c/68388a76-4c84-8011-8e07-bfd4ef9e2bf2
-        sceneIndex = 2;
-        sceneTime = 0.0;
-        sequencer2().playSequence();
-        std::cout << "started scene 2" << std::endl;
-      } else if (globalTime >= 335.0 && globalTime < 335.0 + dt) {
-        sceneIndex = 3;
-        sceneTime = 0.0;
-        sequencer3().playSequence();
-        std::cout << "started scene 3" << std::endl;
-      } else if (globalTime >= 444.0 && globalTime < 444.0 + dt) {
-        sceneIndex = 4;
-        sceneTime = 0.0;
-        sequencer4().playSequence();
-        std::cout << "started scene 4" << std::endl;
-      } else if (globalTime >= 936.0 && globalTime < 936.0 + dt) {
-        sceneIndex = 5;
-        sceneTime = 0.0;
-        sequencer5().playSequence();
-        std::cout << "started scene 5" << std::endl;
-      } else if (globalTime >= 1105.0 && globalTime < 1105.0 + dt) {
-        sceneIndex = 6;
-        sceneTime = 0.0;
-        sequencer6().playSequence();
-        std::cout << "started scene 6" << std::endl;
-      }
+    if (!isPrimary()) {
+      running = state().running;
+    } else {
+      state().running = running;
+    }
 
+    if (running == true) {
+
+      if (isPrimary()) {
+        globalTime += dt;
+        // time : " << globalTime << std::endl;
+        sceneTime += dt;
+        if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
+          sceneIndex = 1;
+          sceneTime = 0.0;
+          sequencer1().playSequence();
+          std::cout << "started scene 1" << std::endl;
+        } else if (globalTime >= 119.0 &&
+                   globalTime <
+                       119.0 +
+                           dt) { // boolean && solution checking was llm idea
+          // https://chatgpt.com/g/g-p-6821791853348191b683bea2cf85363d-softlight-sphere-project/c/68388a76-4c84-8011-8e07-bfd4ef9e2bf2
+          sceneIndex = 2;
+          sceneTime = 0.0;
+          sequencer2().playSequence();
+          std::cout << "started scene 2" << std::endl;
+        } else if (globalTime >= 335.0 && globalTime < 335.0 + dt) {
+          sceneIndex = 3;
+          sceneTime = 0.0;
+          sequencer3().playSequence();
+          std::cout << "started scene 3" << std::endl;
+        } else if (globalTime >= 444.0 && globalTime < 444.0 + dt) {
+          sceneIndex = 4;
+          sceneTime = 0.0;
+          sequencer4().playSequence();
+          std::cout << "started scene 4" << std::endl;
+        } else if (globalTime >= 936.0 && globalTime < 936.0 + dt) {
+          sceneIndex = 5;
+          sceneTime = 0.0;
+          sequencer5().playSequence();
+          std::cout << "started scene 5" << std::endl;
+        } else if (globalTime >= 1105.0 && globalTime < 1105.0 + dt) {
+          sceneIndex = 6;
+          sceneTime = 0.0;
+          sequencer6().playSequence();
+          std::cout << "started scene 6" << std::endl;
+        }
+
+        state().sceneIndex = sceneIndex;
+        state().sceneTime = sceneTime;
+      } else {
+        sceneTime = state().sceneTime;
+        sceneIndex = state().sceneIndex;
+      }
       // end of boilerplate
 
       // SCENE 1 ANIMATE
@@ -520,9 +546,7 @@ public:
   void onSound(al::AudioIOData &io) override {
     if (isPrimary()) {
       spatializer->prepare(io);
-      spatializer->renderBuffer(io, {0, 0, 0}, io.busBuffer(0),
-                                io.framesPerBuffer());
-      // spatializer->finalize(io);
+
       if (sceneIndex == 1) {
         mSequencer1.render(io);
       } else if (sceneIndex == 2) {
@@ -536,7 +560,10 @@ public:
       } else if (sceneIndex == 6) {
         mSequencer6.render(io);
       }
-      // spatializer->finalize(io);
+
+      spatializer->renderBuffer(io, {0, 0, 0}, io.outBuffer(0),
+                                io.framesPerBuffer());
+      spatializer->finalize(io);
     }
   }
 
@@ -558,7 +585,10 @@ public:
 int main() {
   MyApp app;
 
-  app.configureAudio(44100, 512, 2, 0);
+  if (al::sphere::isSphereMachine())
+    app.configureAudio(44100, 512, 60, 0);
+  else
+    app.configureAudio(44100, 512, 2, 0);
   app.start();
   return 0;
 }
