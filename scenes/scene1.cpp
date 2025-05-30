@@ -518,24 +518,26 @@ public:
   }
 
   void onSound(al::AudioIOData &io) override {
-    spatializer->prepare(io);
-    spatializer->renderBuffer(io, {0, 0, 0}, io.busBuffer(0),
-                              io.framesPerBuffer());
-    // spatializer->finalize(io);
-    if (sceneIndex == 1) {
-      mSequencer1.render(io);
-    } else if (sceneIndex == 2) {
-      mSequencer2.render(io);
-    } else if (sceneIndex == 3) {
-      mSequencer3.render(io);
-    } else if (sceneIndex == 4) {
-      mSequencer4.render(io);
-    } else if (sceneIndex == 5) {
-      mSequencer5.render(io);
-    } else if (sceneIndex == 6) {
-      mSequencer6.render(io);
+    if (isPrimary()) {
+      spatializer->prepare(io);
+      spatializer->renderBuffer(io, {0, 0, 0}, io.busBuffer(0),
+                                io.framesPerBuffer());
+      // spatializer->finalize(io);
+      if (sceneIndex == 1) {
+        mSequencer1.render(io);
+      } else if (sceneIndex == 2) {
+        mSequencer2.render(io);
+      } else if (sceneIndex == 3) {
+        mSequencer3.render(io);
+      } else if (sceneIndex == 4) {
+        mSequencer4.render(io);
+      } else if (sceneIndex == 5) {
+        mSequencer5.render(io);
+      } else if (sceneIndex == 6) {
+        mSequencer6.render(io);
+      }
+      // spatializer->finalize(io);
     }
-    // spatializer->finalize(io);
   }
 
   al::SynthSequencer mSequencer1;
