@@ -2,7 +2,7 @@
 #include "Gamma/Envelope.h"
 #include "Gamma/Oscillator.h"
 #include "Gamma/SamplePlayer.h"
-#include "al/app/al_App.hpp"
+#include "al/app/al_DistributedApp.hpp"
 #include "al/graphics/al_Graphics.hpp"
 #include "al/graphics/al_Light.hpp"
 #include "al/graphics/al_Mesh.hpp"
@@ -10,10 +10,12 @@
 #include "al/graphics/al_VAO.hpp"
 #include "al/graphics/al_VAOMesh.hpp"
 #include "al/io/al_ControlNav.hpp"
+#include "al/io/al_File.hpp"
 #include "al/math/al_Random.hpp"
 #include "al/math/al_Vec.hpp"
 #include "al/scene/al_SynthSequencer.hpp"
 #include "al/ui/al_ControlGUI.hpp"
+#include "al/ui/al_FileSelector.hpp"
 #include "al/ui/al_Parameter.hpp"
 #include "al/ui/al_PresetSequencer.hpp"
 #include "al_ext/assets3d/al_Asset.hpp"
@@ -66,11 +68,17 @@ void makePointLine(al::VAOMesh &mMesh, const al::Nav &head, float width,
 
   // mMesh.update();
 }
-
-class MyApp : public al::App {
+struct Common {};
+class MyApp : public al::DistributedAppWithState<Common> {
 public:
+  al::FileSelector selector;
+  al::SearchPaths searchPaths;
+
+  // scene 5
   std::vector<al::Nav> structures;
   ShadedSphere shadedSphere;
+  std::string vertPathScene5;
+  std::string fragPathScene5;
   bool initFlag = true;
 
   al::Parameter width{"Width", 0.05, 0, 0.2};
@@ -96,13 +104,33 @@ public:
   double sceneTime = 0;
   float pointSize = 1.0f; // Particle size
 
-  void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
+  void onInit() override {
+    gam::sampleRate(audioIO().framesPerSecond());
+
+    // scene 5
+    searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
+
+    al::FilePath vertPath5 = searchPaths.find("standard.vert");
+    if (vertPath5.valid()) {
+      vertPathScene5 = vertPath5.filepath();
+      std::cout << "Found file at: " << vertPathScene5 << std::endl;
+    } else {
+      std::cout << "couldnt find basemesh in path" << std::endl;
+    }
+    al::FilePath fragPath5 = searchPaths.find("Crushed.frag");
+    if (fragPath5.valid()) {
+      fragPathScene5 = fragPath5.filepath();
+      std::cout << "Found file at: " << fragPathScene5 << std::endl;
+    } else {
+      std::cout << "couldnt find basemesh in path" << std::endl;
+    }
+  }
 
   void onCreate() override {
     // nav().pos(al::Vec3d(head.pos())); //
-    shadedSphere.setSphere(15.0, 100);
+    shadedSphere.setSphere(15.0, 20);
 
-    shadedSphere.update();
+    // shadedSphere.update();
 
     // shadedSphere.setShaders(
     //     "/Users/lucian/Desktop/201B/allolib_playground/"
@@ -187,11 +215,7 @@ public:
     g.clear(0.0);
     if (initFlag) {
       // Just like ShaderEngine does:
-      shadedSphere.setShaders(
-          "/Users/lucian/Desktop/201B/allolib_playground/softlight-sphere-new/"
-          "softlight/softlight/eoys-shader/standard.vert",
-          "/Users/lucian/Desktop/201B/allolib_playground/softlight-sphere-new/"
-          "softlight/softlight/eoys-shader/Psych1.frag");
+      shadedSphere.setShaders(vertPathScene5, fragPathScene5);
       initFlag = false;
     }
 
