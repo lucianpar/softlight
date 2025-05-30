@@ -3,7 +3,7 @@
 #include "Gamma/Envelope.h"
 #include "Gamma/Oscillator.h"
 #include "Gamma/SamplePlayer.h"
-#include "al/app/al_App.hpp"
+#include "al/app/al_DistributedApp.hpp"
 #include "al/graphics/al_Light.hpp"
 #include "al/graphics/al_Shapes.hpp"
 #include "al/graphics/al_VAO.hpp"
@@ -52,8 +52,9 @@
 */
 
 int sceneIndex = 1;
+struct Common {};
 
-class MyApp : public al::App {
+class MyApp : public al::DistributedAppWithState<Common> {
 public:
   ////INITIAL OBJECTS AND DECLARATIONS////
   // ->
