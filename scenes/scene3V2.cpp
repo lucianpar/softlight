@@ -58,17 +58,17 @@ public:
 
   double globalTime = 0;
   double sceneTime = 0;
-  float pointSize = 5.0f;
+  float pointSizeScene3 = 0.0001f;
 
   void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
 
   void onCreate() override {
     nav().pos(al::Vec3d(head.pos()));
 
-    ripple1.setParams(0.001, 0.01, 1.0, 'y');
+    ripple1.setParams(0.5, 0.1, 1.0, 'y');
     tree1EffectChain.pushBack(&ripple1);
 
-    ripple2.setParams(0.0001, 0.01, 1.0, 'y');
+    ripple2.setParams(0.6, 0.1, 1.0, 'y');
     tree2EffectChain.pushBack(&ripple2);
 
     creature.addTree1(treeMesh);
@@ -90,6 +90,11 @@ public:
     treeMesh.scale(2.5);
     treeMesh2.translate(0, -2.6, 2);
     treeMesh2.scale(2.5);
+    // treeMesh2.scale(0.2);
+    treeMesh.update();
+    treeMesh2.update();
+    // treeMesh.scale(0.05);
+    // treeMesh2.scale(0.05);
     treeMesh.update();
     treeMesh2.update();
 
@@ -109,23 +114,30 @@ public:
     sceneTime += dt;
 
     head.step(dt * updatedSpeed);
-
-    if (sceneTime >= 5) {
+    if (sceneTime <= 10) {
+      pointSizeScene3 += 0.000005;
+      // treeMesh.scale(1.005);
+      // treeMesh2.scale(1.005);
+      // treeMesh.translate(0, 0.001, 0);
+      // treeMesh2.translate(0, 0.001, 0);
+    }
+    if (sceneTime >= 15) {
       tree1EffectChain.process(treeMesh, sceneTime);
       tree2EffectChain.process(treeMesh2, sceneTime);
     }
-    if (sceneTime >= 10) {
+    if (sceneTime >= 35) {
       mainAttractor.processDadras(treeMesh, dt, 0.1);
       mainAttractor.processDadras(treeMesh2, dt, 0.1);
     }
 
     treeMesh.update();
+    treeMesh2.update();
   }
 
   void onDraw(al::Graphics &g) override {
     g.clear(0, 0, 0.4);
     g.shader(pointShader);
-    pointShader.uniform("pointSize", 0.001);
+    pointShader.uniform("pointSize", pointSizeScene3);
     g.blending(true);
     g.blendTrans();
     g.depthTesting(true);
