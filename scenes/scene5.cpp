@@ -35,6 +35,7 @@
 // #include "../imageToSphere.hpp"
 #include "../utility/attractors.hpp"
 #include "../utility/imageColorToMesh.hpp"
+#include "softlight-sphere-new/softlight/softlight/eoys-shader/shaderToSphere.hpp"
 
 /*
 * sequence
@@ -69,6 +70,8 @@ void makePointLine(al::VAOMesh &mMesh, const al::Nav &head, float width,
 class MyApp : public al::App {
 public:
   std::vector<al::Nav> structures;
+  ShadedSphere shadedSphere;
+  bool initFlag = true;
 
   al::Parameter width{"Width", 0.05, 0, 0.2};
   int nAgentsScene4 = 400;
@@ -97,8 +100,18 @@ public:
 
   void onCreate() override {
     // nav().pos(al::Vec3d(head.pos())); //
+    shadedSphere.setSphere(15.0, 100);
 
-    // al::addSphere(test);
+    shadedSphere.update();
+
+    // shadedSphere.setShaders(
+    //     "/Users/lucian/Desktop/201B/allolib_playground/"
+    //     "softlight-sphere-new/softlight/softlight/eoys-shader/"
+    //     "standard.vert",
+    //     "/Users/lucian/Desktop/201B/allolib_playground/softlight-sphere-new/"
+    //     "softlight/softlight/eoys-shader/Psych1.frag");
+
+    shadedSphere.update(); // al::addSphere(test);
 
     // Initialize Mesh
     referenceAttractor.makeNoiseCube(referenceMesh, 5.0, nAgentsScene4);
@@ -171,43 +184,40 @@ public:
   }
 
   void onDraw(al::Graphics &g) override {
-    glEnable(GL_BLEND);
-    // g.blendTrans();
-    g.depthTesting(true);
-
-    g.clear(0.9);
-
-    // g.depthTesting(true);
-    // g.blending(true);
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    // g.blendTrans();
-    g.depthTesting(true);
-
-    g.lighting(false);
-    // lighting from karl's example
-    // light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
-    // light.ambient(al::RGB(1.0, 1.0, 1.0));
-    // light.diffuse(al::RGB(1, 1, 1.0));
-    // g.light(light);
-    // material.specular(1.0);
-    // material.shininess(128);
-    // g.material(material);
-
-    g.pointSize(pointSize);
-    g.color(0.0, 0.0, 0.7, 0.5);
-    for (int i = 0; i < structures.size(); ++i) {
-      g.pushMatrix();
-      g.translate(structures[i].pos());
-      g.rotate(structures[i].quat());
-
-      g.draw(meshBall);
-      g.popMatrix();
+    g.clear(0.0);
+    if (initFlag) {
+      // Just like ShaderEngine does:
+      shadedSphere.setShaders(
+          "/Users/lucian/Desktop/201B/allolib_playground/softlight-sphere-new/"
+          "softlight/softlight/eoys-shader/standard.vert",
+          "/Users/lucian/Desktop/201B/allolib_playground/softlight-sphere-new/"
+          "softlight/softlight/eoys-shader/Psych1.frag");
+      initFlag = false;
     }
-    // g.draw(referenceMesh);
-    // g.draw(ribbon);
-    // g.draw(reflectedRibbon);
-    //   glowShader.end();
+
+    g.shader(shadedSphere.shader());
+
+    shadedSphere.setUniformFloat("u_time", globalTime);
+    shadedSphere.setUniformFloat("onset", 0.0f);
+    shadedSphere.setUniformFloat("cent", 1000.0f);
+    shadedSphere.setUniformFloat("flux", 0.5f);
+
+    shadedSphere.draw(g);
+
+    // // Draw all your Nav structures
+    // g.pointSize(pointSize);
+    // g.color(0.0, 0.0, 0.7, 0.5);
+    // for (int i = 0; i < structures.size(); ++i) {
+    //   g.pushMatrix();
+    //   g.translate(structures[i].pos());
+    //   g.rotate(structures[i].quat());
+    //   g.draw(meshBall);
+    //   g.popMatrix();
+    // }
+    // // g.draw(referenceMesh);
+    // // g.draw(ribbon);
+    // // g.draw(reflectedRibbon);
+    // //   glowShader.end();
   }
 
   void onSound(al::AudioIOData &io) override { mSequencer.render(io); }

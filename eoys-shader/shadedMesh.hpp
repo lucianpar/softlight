@@ -1,50 +1,48 @@
 #pragma once // Only used once during compiling
 
-#include "al/graphics/al_Shader.hpp"
-#include "al/graphics/al_Mesh.hpp"
 #include "al/graphics/al_Graphics.hpp"
+#include "al/graphics/al_Mesh.hpp"
+#include "al/graphics/al_Shader.hpp"
 
-#include <string>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 /**
  * @brief Mesh with associated ShaderProgram.
  */
 class ShadedMesh : public al::VAOMesh {
 public:
-
   // Constructor
   ShadedMesh() {}
 
-  al::ShaderProgram& shader() {
-    return this->mShader;
-  }
+  al::ShaderProgram &shader() { return this->mShader; }
 
   // Load and set shaders. bool so we can immediately know if it worked.
-  bool setShaders(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+  bool setShaders(const std::string &vertexShaderPath,
+                  const std::string &fragmentShaderPath);
 
   // Uniform setters (will add overloads as needed)
-  void setUniformFloat(const std::string& name, float value);
-  void setUniformInt(const std::string& name, int value);
-  void setUniformVec3f(const std::string& name, const al::Vec3f& vec);
-  void setUniformMat4f(const std::string& name, const al::Mat4f& mat);
+  void setUniformFloat(const std::string &name, float value);
+  void setUniformInt(const std::string &name, int value);
+  void setUniformVec3f(const std::string &name, const al::Vec3f &vec);
+  void setUniformMat4f(const std::string &name, const al::Mat4f &mat);
 
-  //updating for spherical purposes. not sure if this will work
-  void setMatrices(const al::Mat4f& view, const al::Mat4f& proj);
-
+  // updating for spherical purposes. not sure if this will work
+  void setMatrices(const al::Mat4f &view, const al::Mat4f &proj);
 
 protected:
   // Helper function to load shader source code
-  static std::string loadFile(const std::string& filePath);
+  static std::string loadFile(const std::string &filePath);
   al::ShaderProgram mShader;
 };
 
-//INLINE DEFS BELOW TO KEEP THINGS TIDY AND EFFICIENT. (there might be a better way to do this, its new to me)
+// INLINE DEFS BELOW TO KEEP THINGS TIDY AND EFFICIENT. (there might be a better
+// way to do this, its new to me)
 
 // Load a shader source file into a string
-inline std::string ShadedMesh::loadFile(const std::string& filePath) {
+inline std::string ShadedMesh::loadFile(const std::string &filePath) {
   std::ifstream file(filePath);
   if (!file.is_open()) {
     std::cerr << "Shader Error: Cannot open file " << filePath << "\n";
@@ -56,7 +54,8 @@ inline std::string ShadedMesh::loadFile(const std::string& filePath) {
 }
 
 // Set vertex and fragment shaders from file paths
-inline bool ShadedMesh::setShaders(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) {
+inline bool ShadedMesh::setShaders(const std::string &vertexShaderPath,
+                                   const std::string &fragmentShaderPath) {
   std::string vertexSource = loadFile(vertexShaderPath);
   std::string fragmentSource = loadFile(fragmentShaderPath);
 
@@ -75,11 +74,11 @@ inline bool ShadedMesh::setShaders(const std::string& vertexShaderPath, const st
   return true;
 }
 
-//INLINE FUNCTIONS BELOW FOR SETTING UNIFORMS
-// Set a single float uniform
+// INLINE FUNCTIONS BELOW FOR SETTING UNIFORMS
+//  Set a single float uniform
 /// @param name The uniform name inside the shader
 /// @param value The float value to send
-inline void ShadedMesh::setUniformFloat(const std::string& name, float value) {
+inline void ShadedMesh::setUniformFloat(const std::string &name, float value) {
   mShader.use(); // 🚨 Make sure shader is active
   int loc = mShader.getUniformLocation(name.c_str());
   if (loc >= 0) {
@@ -93,11 +92,10 @@ inline void ShadedMesh::setUniformFloat(const std::string& name, float value) {
   }
 }
 
-
 // Set a single int uniform
 /// @param name The uniform name inside the shader
 /// @param value The int value to send
-inline void ShadedMesh::setUniformInt(const std::string& name, int value) {
+inline void ShadedMesh::setUniformInt(const std::string &name, int value) {
   mShader.use();
   mShader.uniform(name.c_str(), value);
 }
@@ -105,7 +103,8 @@ inline void ShadedMesh::setUniformInt(const std::string& name, int value) {
 // Set a vec3 uniform (3 floats: x, y, z)
 /// @param name The uniform name inside the shader
 /// @param value (x, y, z)
-inline void ShadedMesh::setUniformVec3f(const std::string& name, const al::Vec3f& vec) {
+inline void ShadedMesh::setUniformVec3f(const std::string &name,
+                                        const al::Vec3f &vec) {
   mShader.use();
   mShader.uniform(name.c_str(), vec);
 }
@@ -113,14 +112,16 @@ inline void ShadedMesh::setUniformVec3f(const std::string& name, const al::Vec3f
 // Set a mat4 uniform (4x4 matrix)
 /// @param name The uniform name inside the shader
 /// @param value 4x4 matrix
-inline void ShadedMesh::setUniformMat4f(const std::string& name, const al::Mat4f& mat) {
+inline void ShadedMesh::setUniformMat4f(const std::string &name,
+                                        const al::Mat4f &mat) {
   mShader.use();
   mShader.uniform(name.c_str(), mat);
 }
 
-//updating for spherical purposes, not sure if this will workl:
-inline void ShadedMesh::setMatrices(const al::Mat4f& view, const al::Mat4f& proj) {
-  mShader.use(); //Important: bind before setting uniforms
+// updating for spherical purposes, not sure if this will workl:
+inline void ShadedMesh::setMatrices(const al::Mat4f &view,
+                                    const al::Mat4f &proj) {
+  mShader.use(); // Important: bind before setting uniforms
   mShader.uniform("al_ModelViewMatrix", view);
   mShader.uniform("al_ProjectionMatrix", proj);
 }

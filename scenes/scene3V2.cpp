@@ -100,7 +100,7 @@ public:
 
     pointShader.compile(slurp("/Users/lucian/Desktop/201B/allolib_playground/"
                               "softlight-sphere-new/softlight/softlight/"
-                              "utility/point-vertex.glsl"),
+                              "utility/scene3-point-vertex.glsl"),
                         slurp("/Users/lucian/Desktop/201B/allolib_playground/"
                               "softlight-sphere-new/softlight/softlight/"
                               "utility/point-fragment.glsl"),
@@ -121,13 +121,13 @@ public:
       // treeMesh.translate(0, 0.001, 0);
       // treeMesh2.translate(0, 0.001, 0);
     }
-    if (sceneTime >= 15) {
+    if (sceneTime >= 15 && sceneTime <= 20) {
       tree1EffectChain.process(treeMesh, sceneTime);
       tree2EffectChain.process(treeMesh2, sceneTime);
     }
-    if (sceneTime >= 35) {
-      mainAttractor.processDadras(treeMesh, dt, 0.1);
-      mainAttractor.processDadras(treeMesh2, dt, 0.1);
+    if (sceneTime >= 20) {
+      mainAttractor.processLorenz(treeMesh, dt, 0.1);
+      mainAttractor.processLorenz(treeMesh2, dt, 0.1);
     }
 
     treeMesh.update();

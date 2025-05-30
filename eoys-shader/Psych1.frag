@@ -7,7 +7,6 @@ out vec4 fragColor;
 
 uniform float u_time;
 uniform float onset;
-uniform float cent;
 uniform float flux;
 
 #define TWO_PI 6.283
