@@ -218,6 +218,9 @@ public:
   void onCreate() override {
 
     cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
+    if (!cuttleboneDomain) {
+      std::cerr << "ERRor: Cuttlebone not started" << std::endl;
+    }
 
     nav().pos(al::Vec3d(0, 0, 0));
     // sequencer().playSequence();
@@ -405,6 +408,10 @@ public:
     } else {
       state().running = running;
     }
+
+    std::cout << "running : " << state().running << std::endl;
+    std::cout << "index : " << state().sceneIndex << std::endl;
+    std::cout << "time : " << state().sceneTime << std::endl;
 
     if (running == true) {
 
