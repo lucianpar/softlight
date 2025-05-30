@@ -225,7 +225,7 @@ public:
 
     blobsEffectChain.process(blobMesh, sceneTime);
 
-    starEffectChain.process(starCreatureMesh, sceneTime);
+    //starEffectChain.process(starCreatureMesh, sceneTime);
 
     blobMesh.update();
 

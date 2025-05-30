@@ -101,38 +101,163 @@ public:
   }
   // end of jellfish
 
-  void addStarfish(al::Mesh &m, int arms = 5, float armLength = 1.0f,
-                   float armWidth = 0.1f) {
-    m.primitive(al::Mesh::TRIANGLES_ADJACENCY);
+  void addStarfish(al::VAOMesh &m, int arms = 7, float baseArmLength = 1.0f,
+                   float baseArmWidth = 0.1f) {
+    m.primitive(al::Mesh::TRIANGLES);
     m.reset();
-
-    al::Vec3f center(0, 0, 0);
 
     for (int i = 0; i < arms; ++i) {
       float angle = i * (2 * M_PI / arms);
-      float nextAngle = angle + M_PI / arms; // for width offset
 
-      // Tip direction
-      al::Vec3f dir(cos(angle), sin(angle), 0);
-      al::Vec3f perp(-dir.y, dir.x, 0); // perpendicular for width
+      // Randomize a bit for alien irregularity
+      float angleOffset = al::rnd::uniform(-0.15f, 0.15f); // small bend
+      float lenJitter = al::rnd::uniform(0.7f, 1.3f);
+      float widthJitter = al::rnd::uniform(0.6f, 1.4f);
+      float zJitter = al::rnd::uniform(-0.1f, 0.1f);
 
-      // Arm tip vertex
-      al::Vec3f tip = dir * armLength;
-      // Base left and right for width
-      al::Vec3f baseLeft = center + perp * armWidth * 0.5f;
-      al::Vec3f baseRight = center - perp * armWidth * 0.5f;
+      float finalAngle = angle + angleOffset;
+      float nextAngle = finalAngle + (2 * M_PI / arms) * 0.3f;
+
+      // Compute slightly skewed base and tip
+      al::Vec3f baseLeft(cos(finalAngle) * baseArmWidth * widthJitter,
+                         sin(finalAngle) * baseArmWidth * widthJitter, zJitter);
+
+      al::Vec3f baseRight(cos(nextAngle) * baseArmWidth * widthJitter,
+                          sin(nextAngle) * baseArmWidth * widthJitter,
+                          -zJitter);
+
+      al::Vec3f tip =
+          ((baseLeft + baseRight).normalize()) * baseArmLength * lenJitter;
+      tip.z += al::rnd::uniform(-0.2f, 0.2f); // extra organic tip depth
 
       // Triangle: baseLeft -> tip -> baseRight
       m.vertex(baseLeft);
       m.vertex(tip);
       m.vertex(baseRight);
 
-      // Color per arm (optional gradient)
+      // Alieny color gradient
       float hue = float(i) / arms;
-      al::Color c = al::HSV(hue, 0.8, 0.9);
+      float sat = al::rnd::uniform(0.6f, 1.0f);
+      float val = al::rnd::uniform(0.7f, 1.0f);
+      al::Color c = al::HSV(hue, sat, val);
+
       m.color(c);
       m.color(c);
       m.color(c);
+    }
+  }
+  // https://chatgpt.com/g/g-p-6821791853348191b683bea2cf85363d-softlight-sphere-project/c/68394302-a0f0-8011-ac5b-6552663a3c92
+  void addTree(al::VAOMesh &m, int targetVertexCount = 20000, int maxDepth = 8,
+               float baseLength = 1.0f, float branchScale = 0.7f,
+               float baseRadius = 0.3f, int circleDetail = 14,
+               int stepsPerBranch = 16, int branchFactor = 3,
+               bool addCanopy = true) {
+
+    m.primitive(al::Mesh::POINTS);
+    m.reset();
+
+    struct Branch {
+      al::Vec3f start;
+      al::Vec3f dir;
+      float radius;
+      int depth;
+    };
+
+    std::vector<Branch> stack;
+    stack.push_back(
+        {al::Vec3f(0, 0, 0), al::Vec3f(0, baseLength, 0), baseRadius, 0});
+
+    int vertexCount = 0;
+    al::Vec3f finalTop;
+
+    while (!stack.empty() && vertexCount < targetVertexCount) {
+      Branch b = stack.back();
+      stack.pop_back();
+
+      al::Vec3f up = b.dir.normalize();
+      al::Vec3f right = up.cross(al::Vec3f(0, 0, 1)).normalize();
+      if (right.mag() < 0.001f)
+        right = al::Vec3f(1, 0, 0);
+      al::Vec3f forward = up.cross(right).normalize();
+
+      float segmentLength = b.dir.mag() / stepsPerBranch;
+
+      for (int s = 0; s <= stepsPerBranch; ++s) {
+        float t = float(s) / stepsPerBranch;
+
+        // Gentle S-curve to keep the trunk centered and elegant
+        float trunkSway = 0.05f * sin((b.depth + t) * M_PI);
+        al::Vec3f center = b.start + b.dir * t + right * trunkSway;
+
+        // Exponential tapering, more dramatic at base
+        float radius = b.radius * pow(0.6f, t);
+
+        for (int i = 0; i < circleDetail; ++i) {
+          float theta = M_2PI * i / circleDetail;
+          al::Vec3f offset = cos(theta) * right + sin(theta) * forward;
+          al::Vec3f p = center + offset * radius;
+
+          m.vertex(p);
+          al::Color c = al::HSV((float)b.depth / maxDepth, 0.5, 0.95);
+          m.color(c);
+          vertexCount++;
+          if (vertexCount >= targetVertexCount)
+            break;
+        }
+
+        if (b.depth == maxDepth && s == stepsPerBranch / 2)
+          finalTop = center;
+
+        if (vertexCount >= targetVertexCount)
+          break;
+      }
+
+      if (b.depth < maxDepth && vertexCount < targetVertexCount) {
+        for (int i = 0; i < branchFactor; ++i) {
+          float theta = M_2PI * i / float(branchFactor);
+
+          // Local frame branching
+          al::Vec3f up = b.dir.normalize();
+          al::Vec3f right = up.cross(al::Vec3f(0, 0, 1)).normalize();
+          if (right.mag() < 0.001f)
+            right = al::Vec3f(1, 0, 0);
+          al::Vec3f forward = up.cross(right).normalize();
+
+          al::Vec3f side = cos(theta) * right + sin(theta) * forward;
+          al::Vec3f newDir =
+              (up + side * 0.5f).normalize() * b.dir.mag() * branchScale;
+
+          float newRadius = b.radius * 0.6f;
+          stack.push_back({b.start + b.dir, newDir, newRadius, b.depth + 1});
+        }
+      }
+    }
+
+    if (addCanopy) {
+      float canopyRadius = baseLength * pow(branchScale, maxDepth) * 1.4f;
+      int canopyRings = 10;
+      int canopyDetail = 18;
+
+      for (int i = 0; i <= canopyRings; ++i) {
+        float v = float(i) / canopyRings;
+        float phi = M_PI * v * 0.5f; // upper hemisphere
+
+        for (int j = 0; j < canopyDetail; ++j) {
+          float u = float(j) / canopyDetail;
+          float theta = M_2PI * u;
+
+          float x = canopyRadius * sin(phi) * cos(theta);
+          float y = canopyRadius * cos(phi);
+          float z = canopyRadius * sin(phi) * sin(theta);
+
+          al::Vec3f p = finalTop + al::Vec3f(x, y, z);
+          m.vertex(p);
+          m.color(al::Color(0.2f, 0.8f, 0.3f));
+          vertexCount++;
+          if (vertexCount >= targetVertexCount)
+            return;
+        }
+      }
     }
   }
 };
