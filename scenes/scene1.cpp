@@ -21,6 +21,7 @@
 #include "al/ui/al_Parameter.hpp"
 #include "al/ui/al_PresetSequencer.hpp"
 #include "al_ext/assets3d/al_Asset.hpp"
+#include "al_ext/statedistribution/al_CuttleboneDomain.hpp"
 #include <iostream>
 #include <string>
 
@@ -62,6 +63,9 @@ struct Common {
 };
 
 class MyApp : public al::DistributedAppWithState<Common> {
+
+  std::shared_ptr<al::CuttleboneDomain<Common>> cuttleboneDomain;
+
   al::FileSelector selector;
   al::SearchPaths searchPaths;
 
@@ -165,52 +169,56 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
-
-    al::FilePath audio1Fp = searchPaths.find("Song1.wav");
-    if (audio1Fp.valid()) {
-      Song1Path = audio1Fp.filepath();
-      std::cout << "Found file at: " << Song1Path << std::endl;
-    } else {
-      std::cout << "couldnt find song1 in path" << std::endl;
-    }
-    al::FilePath audio2Fp = searchPaths.find("Song2.wav");
-    if (audio2Fp.valid()) {
-      Song2Path = audio2Fp.filepath();
-      std::cout << "Found file at: " << Song2Path << std::endl;
-    } else {
-      std::cout << "couldnt find song2 in path" << std::endl;
-    }
-    al::FilePath audio3Fp = searchPaths.find("Song3.wav");
-    if (audio3Fp.valid()) {
-      Song3Path = audio3Fp.filepath();
-      std::cout << "Found file at: " << Song3Path << std::endl;
-    } else {
-      std::cout << "couldnt find song3 in path" << std::endl;
-    }
-    al::FilePath audio4Fp = searchPaths.find("Song4.wav");
-    if (audio4Fp.valid()) {
-      Song4Path = audio4Fp.filepath();
-      std::cout << "Found file at: " << Song4Path << std::endl;
-    } else {
-      std::cout << "couldnt find song4 in path" << std::endl;
-    }
-    al::FilePath audio5Fp = searchPaths.find("Song5.wav");
-    if (audio5Fp.valid()) {
-      Song5Path = audio5Fp.filepath();
-      std::cout << "Found file at: " << Song5Path << std::endl;
-    } else {
-      std::cout << "couldnt find song4 in path" << std::endl;
-    }
-    al::FilePath audio6Fp = searchPaths.find("Song6.wav");
-    if (audio6Fp.valid()) {
-      Song6Path = audio6Fp.filepath();
-      std::cout << "Found file at: " << Song6Path << std::endl;
-    } else {
-      std::cout << "couldnt find song4 in path" << std::endl;
+    if (isPrimary()) {
+      al::FilePath audio1Fp = searchPaths.find("Song1.wav");
+      if (audio1Fp.valid()) {
+        Song1Path = audio1Fp.filepath();
+        std::cout << "Found file at: " << Song1Path << std::endl;
+      } else {
+        std::cout << "couldnt find song1 in path" << std::endl;
+      }
+      al::FilePath audio2Fp = searchPaths.find("Song2.wav");
+      if (audio2Fp.valid()) {
+        Song2Path = audio2Fp.filepath();
+        std::cout << "Found file at: " << Song2Path << std::endl;
+      } else {
+        std::cout << "couldnt find song2 in path" << std::endl;
+      }
+      al::FilePath audio3Fp = searchPaths.find("Song3.wav");
+      if (audio3Fp.valid()) {
+        Song3Path = audio3Fp.filepath();
+        std::cout << "Found file at: " << Song3Path << std::endl;
+      } else {
+        std::cout << "couldnt find song3 in path" << std::endl;
+      }
+      al::FilePath audio4Fp = searchPaths.find("Song4.wav");
+      if (audio4Fp.valid()) {
+        Song4Path = audio4Fp.filepath();
+        std::cout << "Found file at: " << Song4Path << std::endl;
+      } else {
+        std::cout << "couldnt find song4 in path" << std::endl;
+      }
+      al::FilePath audio5Fp = searchPaths.find("Song5.wav");
+      if (audio5Fp.valid()) {
+        Song5Path = audio5Fp.filepath();
+        std::cout << "Found file at: " << Song5Path << std::endl;
+      } else {
+        std::cout << "couldnt find song5 in path" << std::endl;
+      }
+      al::FilePath audio6Fp = searchPaths.find("Song6.wav");
+      if (audio6Fp.valid()) {
+        Song6Path = audio6Fp.filepath();
+        std::cout << "Found file at: " << Song6Path << std::endl;
+      } else {
+        std::cout << "couldnt find song6 in path" << std::endl;
+      }
     }
   }
 
   void onCreate() override {
+
+    cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
+
     nav().pos(al::Vec3d(0, 0, 0));
     // sequencer().playSequence();
 
@@ -538,6 +546,8 @@ public:
       if (sceneTime >= bodyCloudAppear) {
         g.draw(bodyMesh);
       }
+    } else {
+      g.clear(0.0);
     }
 
     // SCENE 1 END /////
