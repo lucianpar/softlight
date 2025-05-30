@@ -15,6 +15,6 @@ out Vertex {
 
 void main() {
   gl_Position = al_ModelViewMatrix * vec4(vertexPosition, 1.0);
-  vertex.color = vertexColor;
+  vertex.color = vertexColor * 3.0; //remove 3.0 if i want to use for something
   vertex.size = vertexSize.x;
 }
