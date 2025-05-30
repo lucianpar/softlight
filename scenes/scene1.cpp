@@ -226,25 +226,26 @@ public:
     //  std::string path =
     //  localAssetPath("../softlight-sphere-new/audio/Song2.wav");
 
-    sequencer1().add<SoundObject>(0, 44000).set(
+    if (isPrimary()) {
+      sequencer1().add<SoundObject>(0, 44000).set(
 
-        Song1Path.c_str());
-    sequencer2().add<SoundObject>(0, 44000).set(
+          Song1Path.c_str());
+      sequencer2().add<SoundObject>(0, 44000).set(
 
-        Song2Path.c_str());
-    sequencer3().add<SoundObject>(0, 44000).set(
+          Song2Path.c_str());
+      sequencer3().add<SoundObject>(0, 44000).set(
 
-        Song3Path.c_str());
-    sequencer4().add<SoundObject>(0, 44000).set(
+          Song3Path.c_str());
+      sequencer4().add<SoundObject>(0, 44000).set(
 
-        Song4Path.c_str());
-    sequencer5().add<SoundObject>(0, 44000).set(
+          Song4Path.c_str());
+      sequencer5().add<SoundObject>(0, 44000).set(
 
-        Song5Path.c_str());
-    sequencer6().add<SoundObject>(0, 44000).set(
+          Song5Path.c_str());
+      sequencer6().add<SoundObject>(0, 44000).set(
 
-        Song6Path.c_str());
-    //}
+          Song6Path.c_str());
+    }
 
     // songVoice =
     //     dynamic_cast<SoundObject *>(sequencer().getVoice<SoundObject>());
