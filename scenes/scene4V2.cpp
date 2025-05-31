@@ -58,11 +58,10 @@ public:
 
   // al::Parameter width{"Width", 0.05, 0, 0.2};
   // Meshes and Effects
-  std::vector<al::Nav> structures;
-  int nAgentsScene4 = 40;
+
   al::VAOMesh meshBall;
   float ballSpeedScene4 = 0.5;
-  al::VAOMesh referenceMesh;
+
   Attractor referenceAttractor;
   al::VAOMesh cloudMeshScene4;
   al::VAOMesh cloudMesh2Scene4;
@@ -70,6 +69,10 @@ public:
   // scene 4 params
   double scene4PointSize = 0.001;
   float scene4paramB = 0.11;
+
+  // scene 4 sequencing
+  double scene4event_decreaseB = 20.0;
+  double scene4event_increaseB = 100.0;
 
   // Global Time
   double globalTime = 0;
@@ -94,11 +97,8 @@ public:
     // al::addSphere(test);
 
     // Initialize Mesh
-    referenceAttractor.makeNoiseCube(referenceMesh, 5.0, nAgentsScene4);
 
-    referenceMesh.update();
-
-    referenceAttractor.makeNoiseCube(cloudMeshScene4, 5.0, 20000);
+    referenceAttractor.makeNoiseCube(cloudMeshScene4, 5.0, 25000);
     cloudMeshScene4.primitive(al::Mesh::POINTS);
     for (int i = 0; i < cloudMeshScene4.vertices().size(); ++i) {
       cloudMeshScene4.color(1.0, 0.3, 0.1, 1.0); // or any RGBA
@@ -113,26 +113,6 @@ public:
 
     // scene4ShellMesh.primitive(al::Mesh::LINE_LOOP);
     // scene4ShellMesh.update();
-
-    std::cout << "totalVerts: " << meshBall.vertices().size() * nAgentsScene4
-              << std::endl;
-
-    for (int b = 0; b < nAgentsScene4; ++b) {
-      al::Nav p;
-      p.pos() = referenceMesh.vertices()[b];
-      p.quat().set(1, 1, 1, 1).normalize();
-      // p.set(randomVec3f(5), randomVec3f(1));
-      structures.push_back(p);
-      // velocity.push_back(al::Vec3f(0));
-      // force.push_back(al::Vec3f(0));
-    }
-    // al::addSphere(referenceMesh, 10.0, 10.0);
-    referenceMesh.primitive(al::Mesh::POINTS);
-
-    // target.set(al::rnd::uniformS(), al::rnd::uniformS(),
-    // al::rnd::uniformS());
-
-    // makePointLine()
   }
 
   void onAnimate(double dt) override {
@@ -143,25 +123,29 @@ public:
     // referenceAttractor.processRossler(newAttractor, dt, 1.0);
     // referenceAttractor.processLorenz(newAttractor, dt, 1.0);
 
-    referenceAttractor.processSprottLinzF(referenceMesh, dt, ballSpeedScene4,
-                                          0.11);
-    referenceMesh.update();
-
     referenceAttractor.processThomas(cloudMeshScene4, dt, 1.0, scene4paramB);
     for (auto &v : cloudMeshScene4.vertices()) {
-      v += al::Vec3f(0, 0, -0.035); // or whatever offset you want
+      v += al::Vec3f(0, 0, -0.03); // or whatever offset you want
     }
     cloudMeshScene4.update();
-
-    for (int i = 0; i < structures.size(); ++i) {
-      structures[i].faceToward(referenceMesh.vertices()[i]);
-      structures[i].moveF(ballSpeedScene4);
-      structures[i].step(dt);
+    if (sceneTime >= scene4event_decreaseB &&
+        sceneTime <= scene4event_increaseB) {
+      scene4paramB -= 0.00001;
+    } else if (sceneTime >= scene4event_increaseB) {
+      scene4paramB += 0.00001;
     }
-    scene4paramB -= 0.00001;
-    if (scene4PointSize < 2.0) {
+    std::cout << scene4paramB << std::endl;
+
+    if (scene4PointSize >= 0.5) {
       scene4PointSize += 0.000005;
     }
+    if (scene4PointSize <= 0.1) {
+      scene4PointSize += 0.000005;
+    } else if (scene4PointSize >= 0.1) {
+      scene4PointSize = 0.1;
+    }
+    std::cout << "point size: " << scene4PointSize << std::endl;
+
     // if (sceneTime <= 6.0) {
     //   cloudMeshScene4.translate(0, 0, 0.1);
     // }
@@ -183,28 +167,6 @@ public:
     g.blendTrans();
     // g.depthTesting(true);
 
-    // g.lighting(false);
-    // // lighting from karl's example
-    // light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
-    // light.ambient(al::RGB(1.0, 1.0, 1.0));
-    // light.diffuse(al::RGB(1, 1, 1.0));
-    // g.light(light);
-    // material.specular(1.0);
-    // material.shininess(10);
-    // g.material(material);
-
-    // g.pointSize(pointSize);
-    //  g.color(0.871, 0.467, 0.192, 0.1);
-    // for (int i = 0; i < structures.size(); ++i) {
-    //   g.pushMatrix();
-    //   g.color(0.871, 0.467, 0.192, 1.0);
-    //   g.translate(structures[i].pos());
-    //   g.rotate(structures[i].quat());
-
-    //   //g.draw(meshBall);
-    //   // g.draw(cloudMeshScene4);
-    //   g.popMatrix();
-    // }
     g.shader(pointShader);
     pointShader.uniform("pointSize", scene4PointSize);
     pointShader.uniform("inputColor", al::Vec4f(0.055, 0.478, 0.44, 1.0));
@@ -215,7 +177,7 @@ public:
     // Draw mirrored or offset version
     g.pushMatrix();
     // g.translate(0, 0, 10); // offset forward on Z
-    g.scale(1, 1, -1); // mirror across Z axis (invert Z)
+    g.scale(1, 1, -1.5); // mirror across Z axis (invert Z)
     g.draw(cloudMeshScene4);
     g.popMatrix();
     // cloudMeshScene4.update();
