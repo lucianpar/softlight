@@ -176,6 +176,7 @@ public:
   void onAnimate(double dt) override {
     globalTime += dt;
     sceneTime += dt;
+    std::cout << globalTime << std::endl;
 
     /// trying newer effect
     // referenceAttractor.processRossler(newAttractor, dt, 1.0);

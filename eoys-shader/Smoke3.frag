@@ -35,7 +35,7 @@ float engulfMask(vec2 uv, float t) {
 }
 
 void main() {
-    vec2 uv = vPos.xy / 15.0;
+    vec2 uv = vPos.xy / 30.0;
     float t = u_time + flux * 0.3;
 
     // Drifted UV

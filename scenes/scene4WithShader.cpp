@@ -81,7 +81,7 @@ public:
 
   // Global Time
   double globalTime = 0;
-  double sceneTime = 0;
+  double sceneTime = 100.0;
   float pointSize = 1.0f; // Particle size
 
   void onInit() override {
@@ -176,6 +176,7 @@ public:
   void onAnimate(double dt) override {
     globalTime += dt;
     sceneTime += dt;
+    std::cout << globalTime << std::endl;
 
     /// trying newer effect
     // referenceAttractor.processRossler(newAttractor, dt, 1.0);
@@ -207,21 +208,6 @@ public:
     shadedSphere.setUniformFloat("flux", 0.5f);
 
     shadedSphere.draw(g);
-
-    // // Draw all your Nav structures
-    // g.pointSize(pointSize);
-    // g.color(0.0, 0.0, 0.7, 0.5);
-    // for (int i = 0; i < structures.size(); ++i) {
-    //   g.pushMatrix();
-    //   g.translate(structures[i].pos());
-    //   g.rotate(structures[i].quat());
-    //   g.draw(meshBall);
-    //   g.popMatrix();
-    // }
-    // // g.draw(referenceMesh);
-    // // g.draw(ribbon);
-    // // g.draw(reflectedRibbon);
-    // //   glowShader.end();
   }
 
   void onSound(al::AudioIOData &io) override { mSequencer.render(io); }
