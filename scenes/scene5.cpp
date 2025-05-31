@@ -117,7 +117,7 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
-    al::FilePath fragPath5 = searchPaths.find("Foam.frag");
+    al::FilePath fragPath5 = searchPaths.find("Crushed.frag");
     if (fragPath5.valid()) {
       fragPathScene5 = fragPath5.filepath();
       std::cout << "Found file at: " << fragPathScene5 << std::endl;
@@ -221,7 +221,7 @@ public:
 
     g.shader(shadedSphere.shader());
 
-    shadedSphere.setUniformFloat("u_time", globalTime);
+    shadedSphere.setUniformFloat("u_time", sceneTime);
     shadedSphere.setUniformFloat("onset", 0.0f);
     shadedSphere.setUniformFloat("cent", 1000.0f);
     shadedSphere.setUniformFloat("flux", 0.5f);

@@ -45,28 +45,28 @@
 *figure out spacings
 
 */
+// boilerplate
+std::string slurp(const std::string &fileName);
 
 class MyApp : public al::App {
 public:
+  al::ShaderProgram pointShader;
+
   al::Light light;
   // Light light;
   al::Material material;
-  std::vector<al::Nav> structures;
 
   // al::Parameter width{"Width", 0.05, 0, 0.2};
-  int nAgentsScene4 = 50;
-
   // Meshes and Effects
+  std::vector<al::Nav> structures;
+  int nAgentsScene4 = 40;
   al::VAOMesh meshBall;
   float ballSpeedScene4 = 0.5;
   al::VAOMesh referenceMesh;
   Attractor referenceAttractor;
-  al::VAOMesh sunMesh;
-  al::VAOMesh scene4ShellMesh;
-  VertexEffectChain sunEffectChain;
-  OrbitEffect sunOrbit1;
-  OrbitEffect sunOrbit2;
-  Attractor bigAttractor;
+  al::VAOMesh cloudMesh;
+  al::VAOMesh cloudMesh2;
+
   // Global Time
   double globalTime = 0;
   double sceneTime = 0;
@@ -75,38 +75,41 @@ public:
   void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
 
   void onCreate() override {
+    // boilerplate
+    pointShader.compile(slurp("/Users/lucian/Desktop/201B/allolib_playground/"
+                              "softlight-sphere-new/softlight/softlight/"
+                              "utility/point-vertex.glsl"),
+                        slurp("/Users/lucian/Desktop/201B/allolib_playground/"
+                              "softlight-sphere-new/softlight/softlight/"
+                              "utility/point-fragment.glsl"),
+                        slurp("/Users/lucian/Desktop/201B/allolib_playground/"
+                              "softlight-sphere-new/softlight/softlight/"
+                              "utility/point-geometry.glsl"));
+    //
     // nav().pos(al::Vec3d(head.pos())); //
 
     // al::addSphere(test);
 
     // Initialize Mesh
     referenceAttractor.makeNoiseCube(referenceMesh, 5.0, nAgentsScene4);
+
     referenceMesh.update();
-    // newAttractor.primitive(al::Mesh::LINE_LOOP);
-    // newAttractor.update();
-    // std::cout << referenceMesh.vertices()[0] << referenceMesh.vertices()[1]
-    //           << std::endl;
-    // random generated values that produced good deterministic results
-    // attempting to use the smallest number
-    // referenceMesh.vertex(0.532166, 3.68314, -2.96492);
-    // referenceMesh.vertex(-1.21797, -0.745106, 2.07905);
-    al::addIcosphere(meshBall, 0.05, 1);
+
+    referenceAttractor.makeNoiseCube(cloudMesh, 5.0, 20000);
+    cloudMesh.primitive(al::Mesh::POINTS);
+    for (int i = 0; i < cloudMesh.vertices().size(); ++i) {
+      cloudMesh.color(1.0, 0.3, 0.1, 1.0); // or any RGBA
+      cloudMesh.texCoord(1.0, 0.0);        // sets vertexSize.x
+    }
+    // cloudMesh.update(); // reupload with new attribs
+    cloudMesh.update();
+
+    al::addIcosphere(meshBall, 0.02, 1);
     meshBall.primitive(al::Mesh::LINE_LOOP);
     meshBall.update();
 
-    al::addSphere(sunMesh, 1.0, 30, 30);
-    for (int i = 0; i < sunMesh.vertices().size(); i++) {
-      sunMesh.color(0.012, 0.369, 0.31);
-    }
-    sunMesh.translate(0, 0, 5);
-    sunMesh.primitive(al::Mesh::LINES);
-    sunMesh.update();
-    al::addSphere(scene4ShellMesh, 10.0, 100, 100);
-    for (int i = 0; i < scene4ShellMesh.vertices().size(); i++) {
-      scene4ShellMesh.color(0.012, 0.369, 0.31);
-    }
-    scene4ShellMesh.primitive(al::Mesh::LINE_LOOP);
-    scene4ShellMesh.update();
+    // scene4ShellMesh.primitive(al::Mesh::LINE_LOOP);
+    // scene4ShellMesh.update();
 
     std::cout << "totalVerts: " << meshBall.vertices().size() * nAgentsScene4
               << std::endl;
@@ -114,10 +117,7 @@ public:
     for (int b = 0; b < nAgentsScene4; ++b) {
       al::Nav p;
       p.pos() = referenceMesh.vertices()[b];
-      p.quat()
-          .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
-               al::rnd::uniformS())
-          .normalize();
+      p.quat().set(1, 1, 1, 1).normalize();
       // p.set(randomVec3f(5), randomVec3f(1));
       structures.push_back(p);
       // velocity.push_back(al::Vec3f(0));
@@ -125,11 +125,6 @@ public:
     }
     // al::addSphere(referenceMesh, 10.0, 10.0);
     referenceMesh.primitive(al::Mesh::POINTS);
-
-    sunOrbit1.setParams(0.3, 4.0, {0, 0, 0}, 1);
-    sunOrbit2.setParams(0.1, 6.0, {0, 0, 0}, 2);
-    sunEffectChain.pushBack(&sunOrbit1);
-    sunEffectChain.pushBack(&sunOrbit2);
 
     // target.set(al::rnd::uniformS(), al::rnd::uniformS(),
     // al::rnd::uniformS());
@@ -145,62 +140,78 @@ public:
     // referenceAttractor.processRossler(newAttractor, dt, 1.0);
     // referenceAttractor.processLorenz(newAttractor, dt, 1.0);
 
-    referenceAttractor.processArneodo(referenceMesh, dt, ballSpeedScene4);
+    referenceAttractor.processSprottLinzF(referenceMesh, dt, ballSpeedScene4,
+                                          0.11);
     referenceMesh.update();
+
+    referenceAttractor.processThomas(cloudMesh, dt, 1.0, 0.11);
+    for (auto &v : cloudMesh.vertices()) {
+      v += al::Vec3f(0, 0, -0.035); // or whatever offset you want
+    }
+    cloudMesh.update();
 
     for (int i = 0; i < structures.size(); ++i) {
       structures[i].faceToward(referenceMesh.vertices()[i]);
       structures[i].moveF(ballSpeedScene4);
       structures[i].step(dt);
     }
+    // if (sceneTime <= 6.0) {
+    //   cloudMesh.translate(0, 0, 0.1);
+    // }
 
     // sunEffectChain.process(sunMesh, sceneTime); // toggle orbiting
-    bigAttractor.processBlackHoleSpiral(scene4ShellMesh, dt, 1, 3);
-    scene4ShellMesh.update();
   }
 
   void onDraw(al::Graphics &g) override {
-    glEnable(GL_BLEND);
-    // g.blendTrans();
+    // glEnable(GL_BLEND);
+    //  g.blendTrans();
     g.depthTesting(true);
 
-    g.clear(0.0);
+    g.clear(1, 0.969, 0.906);
 
     // g.depthTesting(true);
     g.blending(true);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    // g.blendTrans();
-    g.depthTesting(true);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    g.blendTrans();
+    // g.depthTesting(true);
 
-    g.lighting(true);
-    // lighting from karl's example
-    light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
-    light.ambient(al::RGB(1.0, 1.0, 1.0));
-    light.diffuse(al::RGB(1, 1, 1.0));
-    g.light(light);
-    material.specular(1.0);
-    material.shininess(10);
-    g.material(material);
+    // g.lighting(false);
+    // // lighting from karl's example
+    // light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
+    // light.ambient(al::RGB(1.0, 1.0, 1.0));
+    // light.diffuse(al::RGB(1, 1, 1.0));
+    // g.light(light);
+    // material.specular(1.0);
+    // material.shininess(10);
+    // g.material(material);
 
-    g.pointSize(pointSize);
-    // g.color(0.871, 0.467, 0.192, 0.1);
-    for (int i = 0; i < structures.size(); ++i) {
-      g.pushMatrix();
-      g.color(0.871, 0.467, 0.192, 0.1);
-      g.translate(structures[i].pos());
-      g.rotate(structures[i].quat());
+    // g.pointSize(pointSize);
+    //  g.color(0.871, 0.467, 0.192, 0.1);
+    // for (int i = 0; i < structures.size(); ++i) {
+    //   g.pushMatrix();
+    //   g.color(0.871, 0.467, 0.192, 1.0);
+    //   g.translate(structures[i].pos());
+    //   g.rotate(structures[i].quat());
 
-      g.draw(meshBall);
-      g.popMatrix();
-    }
-    g.meshColor();
-    // g.draw(sunMesh);
-    g.draw(scene4ShellMesh);
-    // g.draw(referenceMesh);
-    // g.draw(ribbon);
-    // g.draw(reflectedRibbon);
-    //   glowShader.end();
+    //   //g.draw(meshBall);
+    //   // g.draw(cloudMesh);
+    //   g.popMatrix();
+    // }
+    g.shader(pointShader);
+    pointShader.uniform("pointSize", 0.009);
+    pointShader.uniform("inputColor", al::Vec4f(0.055, 0.478, 0.44, 1.0));
+
+    // g.color(0.0);
+    g.draw(cloudMesh);
+    // cloudMesh.update();
+    // g.meshColor();
+    //  g.draw(sunMesh);
+    //  g.draw(scene4ShellMesh);
+    //  g.draw(referenceMesh);
+    //  g.draw(ribbon);
+    //  g.draw(reflectedRibbon);
+    //    glowShader.end();
   }
 
   void onSound(al::AudioIOData &io) override { mSequencer.render(io); }
@@ -212,4 +223,12 @@ int main() {
   MyApp app;
   app.start();
   return 0;
+}
+
+// boilerplate
+std::string slurp(const std::string &fileName) {
+  std::ifstream file(fileName);
+  std::string contents((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+  return contents;
 }

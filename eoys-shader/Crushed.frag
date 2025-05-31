@@ -49,14 +49,10 @@ vec3 Mucous_Membrane(vec2 pos) {
 }
 
 void main() {
-  // Fully white for the first 5 seconds
-  if (u_time < 1.0) {
-    fragColor = vec4(1.0);
-    return;
-  }
+ 
 
   // Otherwise evaluate shader and fade in (quickly)
-  float fade = smoothstep(1.0, 10.5, u_time);  // fade in over 0.5s
+  float fade = smoothstep(0.0, 10.5, u_time);  // fade in over 0.5s
   vec3 shaderColor = Mucous_Membrane(vPos.xy) * 0.9;
   vec3 finalColor = mix(vec3(1.0), shaderColor, fade);
   fragColor = vec4(finalColor, 1.0);

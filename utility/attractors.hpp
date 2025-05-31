@@ -17,18 +17,28 @@ public:
     mMesh.primitive(al::Mesh::POINTS);
     mMesh.reset();
 
-    for (int i = 0; i < nVertices; ++i) {
-      float x = al::rnd::uniformS() * radius;
-      float y = al::rnd::uniformS() * radius;
-      float z = al::rnd::uniformS() * radius;
+    // Determine how many points per axis (rounded cube root)
+    int pointsPerAxis = std::ceil(std::cbrt(nVertices));
+    float step =
+        (2.0f * radius) / (pointsPerAxis - 1); // spacing between points
 
-      mMesh.vertex(al::Vec3f(x, y, z));
-      // mMesh.color(al::RGBA(1.0f, 1.0f, 1.0f, 1.0f ));
+    int count = 0;
+    for (int i = 0; i < pointsPerAxis && count < nVertices; ++i) {
+      for (int j = 0; j < pointsPerAxis && count < nVertices; ++j) {
+        for (int k = 0; k < pointsPerAxis && count < nVertices; ++k) {
+          float x = -radius + i * step;
+          float y = -radius + j * step;
+          float z = -radius + k * step;
+          mMesh.vertex(al::Vec3f(x, y, z));
+          ++count;
+        }
+      }
     }
 
     mMesh.update();
     return mMesh;
   }
+
   void processThomas(al::VAOMesh &mMesh, float time, float speed,
                      float b = 0.208) {
     auto &vertices = mMesh.vertices();
