@@ -64,13 +64,16 @@ public:
   float ballSpeedScene4 = 0.5;
   al::VAOMesh referenceMesh;
   Attractor referenceAttractor;
-  al::VAOMesh cloudMesh;
-  al::VAOMesh cloudMesh2;
+  al::VAOMesh cloudMeshScene4;
+  al::VAOMesh cloudMesh2Scene4;
+
+  // scene 4 params
+  double scene4PointSize = 0.001;
+  float scene4paramB = 0.11;
 
   // Global Time
   double globalTime = 0;
   double sceneTime = 0;
-  float pointSize = 5.0f; // Particle size
 
   void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
 
@@ -95,14 +98,14 @@ public:
 
     referenceMesh.update();
 
-    referenceAttractor.makeNoiseCube(cloudMesh, 5.0, 20000);
-    cloudMesh.primitive(al::Mesh::POINTS);
-    for (int i = 0; i < cloudMesh.vertices().size(); ++i) {
-      cloudMesh.color(1.0, 0.3, 0.1, 1.0); // or any RGBA
-      cloudMesh.texCoord(1.0, 0.0);        // sets vertexSize.x
+    referenceAttractor.makeNoiseCube(cloudMeshScene4, 5.0, 20000);
+    cloudMeshScene4.primitive(al::Mesh::POINTS);
+    for (int i = 0; i < cloudMeshScene4.vertices().size(); ++i) {
+      cloudMeshScene4.color(1.0, 0.3, 0.1, 1.0); // or any RGBA
+      cloudMeshScene4.texCoord(1.0, 0.0);        // sets vertexSize.x
     }
-    // cloudMesh.update(); // reupload with new attribs
-    cloudMesh.update();
+    // cloudMeshScene4.update(); // reupload with new attribs
+    cloudMeshScene4.update();
 
     al::addIcosphere(meshBall, 0.02, 1);
     meshBall.primitive(al::Mesh::LINE_LOOP);
@@ -144,19 +147,23 @@ public:
                                           0.11);
     referenceMesh.update();
 
-    referenceAttractor.processThomas(cloudMesh, dt, 1.0, 0.11);
-    for (auto &v : cloudMesh.vertices()) {
+    referenceAttractor.processThomas(cloudMeshScene4, dt, 1.0, scene4paramB);
+    for (auto &v : cloudMeshScene4.vertices()) {
       v += al::Vec3f(0, 0, -0.035); // or whatever offset you want
     }
-    cloudMesh.update();
+    cloudMeshScene4.update();
 
     for (int i = 0; i < structures.size(); ++i) {
       structures[i].faceToward(referenceMesh.vertices()[i]);
       structures[i].moveF(ballSpeedScene4);
       structures[i].step(dt);
     }
+    scene4paramB -= 0.00001;
+    if (scene4PointSize < 2.0) {
+      scene4PointSize += 0.000005;
+    }
     // if (sceneTime <= 6.0) {
-    //   cloudMesh.translate(0, 0, 0.1);
+    //   cloudMeshScene4.translate(0, 0, 0.1);
     // }
 
     // sunEffectChain.process(sunMesh, sceneTime); // toggle orbiting
@@ -195,16 +202,23 @@ public:
     //   g.rotate(structures[i].quat());
 
     //   //g.draw(meshBall);
-    //   // g.draw(cloudMesh);
+    //   // g.draw(cloudMeshScene4);
     //   g.popMatrix();
     // }
     g.shader(pointShader);
-    pointShader.uniform("pointSize", 0.009);
+    pointShader.uniform("pointSize", scene4PointSize);
     pointShader.uniform("inputColor", al::Vec4f(0.055, 0.478, 0.44, 1.0));
 
     // g.color(0.0);
-    g.draw(cloudMesh);
-    // cloudMesh.update();
+    g.draw(cloudMeshScene4);
+
+    // Draw mirrored or offset version
+    g.pushMatrix();
+    // g.translate(0, 0, 10); // offset forward on Z
+    g.scale(1, 1, -1); // mirror across Z axis (invert Z)
+    g.draw(cloudMeshScene4);
+    g.popMatrix();
+    // cloudMeshScene4.update();
     // g.meshColor();
     //  g.draw(sunMesh);
     //  g.draw(scene4ShellMesh);
