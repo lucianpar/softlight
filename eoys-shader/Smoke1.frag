@@ -44,7 +44,7 @@ float internalMembrane(vec2 uv, float t) {
 }
 
 void main() {
-    vec2 uv = vPos.xy / 7.0;
+    vec2 uv = vPos.xy / 15.0;
     float t = u_time + flux * 0.4;
 
     float transitionTime = 10.0;

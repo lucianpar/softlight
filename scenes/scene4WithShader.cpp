@@ -48,26 +48,6 @@
 
 */
 
-void makePointLine(al::VAOMesh &mMesh, const al::Nav &head, float width,
-                   al::Vec3f inputColor) {
-  mMesh.vertex(head.pos() + head.ur() * width);
-  mMesh.vertex(head.pos() + head.ur() * (width / 2));
-  mMesh.vertex(head.pos() + head.ur() * (width / 4));
-  mMesh.vertex(head.pos());
-  mMesh.vertex(head.pos() - head.ur() * width);
-  mMesh.vertex(head.pos() - head.ur() * (width / 2));
-  mMesh.vertex(head.pos() - head.ur() * (width / 4));
-
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.7);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.6);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.5);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.3);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.7);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.6);
-  mMesh.color(inputColor.x, inputColor.y, inputColor.z, 0.5);
-
-  // mMesh.update();
-}
 struct Common {};
 class MyApp : public al::DistributedAppWithState<Common> {
 public:
@@ -117,7 +97,7 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
-    al::FilePath fragPath5 = searchPaths.find("Foam.frag");
+    al::FilePath fragPath5 = searchPaths.find("FoamMain.frag");
     if (fragPath5.valid()) {
       fragPathScene5 = fragPath5.filepath();
       std::cout << "Found file at: " << fragPathScene5 << std::endl;
