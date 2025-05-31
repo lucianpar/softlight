@@ -98,7 +98,9 @@ public:
 
     // Initialize Mesh
 
-    referenceAttractor.makeNoiseCube(cloudMeshScene4, 5.0, 25000);
+    // referenceAttractor.makeNoiseCube(cloudMeshScene4, 5.0, 25000);
+    al::addSphere(cloudMeshScene4, 5.0, 150, 150);
+    std::cout << cloudMeshScene4.vertices().size() << std::endl;
     cloudMeshScene4.primitive(al::Mesh::POINTS);
     for (int i = 0; i < cloudMeshScene4.vertices().size(); ++i) {
       cloudMeshScene4.color(1.0, 0.3, 0.1, 1.0); // or any RGBA
@@ -123,9 +125,9 @@ public:
     // referenceAttractor.processRossler(newAttractor, dt, 1.0);
     // referenceAttractor.processLorenz(newAttractor, dt, 1.0);
 
-    referenceAttractor.processThomas(cloudMeshScene4, dt, 1.0, scene4paramB);
+    referenceAttractor.processThomas(cloudMeshScene4, dt, 0.015, scene4paramB);
     for (auto &v : cloudMeshScene4.vertices()) {
-      v += al::Vec3f(0, 0, -0.03); // or whatever offset you want
+      v += al::Vec3f(0, 0, -0.005); // or whatever offset you want
     }
     cloudMeshScene4.update();
     if (sceneTime >= scene4event_decreaseB &&
@@ -136,14 +138,12 @@ public:
     }
     std::cout << scene4paramB << std::endl;
 
-    if (scene4PointSize >= 0.5) {
-      scene4PointSize += 0.000005;
+    // scene4PointSize = std::min(scene4PointSize + 0.000005, 0.1);
+    scene4PointSize += 0.000005f;
+    if (scene4PointSize > 0.1f) {
+      scene4PointSize = 0.1f;
     }
-    if (scene4PointSize <= 0.1) {
-      scene4PointSize += 0.000005;
-    } else if (scene4PointSize >= 0.1) {
-      scene4PointSize = 0.1;
-    }
+
     std::cout << "point size: " << scene4PointSize << std::endl;
 
     // if (sceneTime <= 6.0) {
