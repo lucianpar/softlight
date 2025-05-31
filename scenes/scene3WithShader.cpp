@@ -97,7 +97,7 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
-    al::FilePath fragPath5 = searchPaths.find("Crushed2.frag");
+    al::FilePath fragPath5 = searchPaths.find("Por1.frag");
     if (fragPath5.valid()) {
       fragPathScene5 = fragPath5.filepath();
       std::cout << "Found file at: " << fragPathScene5 << std::endl;

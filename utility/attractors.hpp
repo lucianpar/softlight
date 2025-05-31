@@ -4,6 +4,7 @@
 #include "al/graphics/al_VAOMesh.hpp"
 #include "al/math/al_Complex.hpp"
 #include "al/math/al_Vec.hpp"
+#include <cmath>
 
 struct Attractor {
   // basic thomas attractor
@@ -250,6 +251,27 @@ public:
 
       v.x = r * std::cos(theta);
       v.z = r * std::sin(theta);
+    }
+  }
+
+  void processWimole(al::VAOMesh &mMesh, float dt, float speed = 2.0f,
+                     float a = 15.0f) {
+    auto &vertices = mMesh.vertices();
+
+    for (auto &v : vertices) {
+      float x = v.x;
+      float y = v.y;
+      float z = v.z;
+
+      // Differential-like update
+      float dx = (y - z) * speed;
+      float dy = (-z + tanh(x)) * speed;
+      float dz = (-a + (x * y + fabs(y))) * speed;
+
+      // Euler step
+      v.x += dx * dt;
+      v.y += dy * dt;
+      v.z += dz * dt;
     }
   }
 };
