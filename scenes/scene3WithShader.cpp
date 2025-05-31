@@ -81,7 +81,7 @@ public:
 
   // Global Time
   double globalTime = 0;
-  double sceneTime = 74.0;
+  double sceneTime = 40.0;
   float pointSize = 1.0f; // Particle size
 
   void onInit() override {
@@ -97,7 +97,7 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
-    al::FilePath fragPath5 = searchPaths.find("CrushedMain.frag");
+    al::FilePath fragPath5 = searchPaths.find("Crushed2.frag");
     if (fragPath5.valid()) {
       fragPathScene5 = fragPath5.filepath();
       std::cout << "Found file at: " << fragPathScene5 << std::endl;

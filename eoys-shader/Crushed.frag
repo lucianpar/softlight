@@ -6,8 +6,8 @@ in vec2 vUV;
 out vec4 fragColor;
 
 uniform float u_time;
-uniform float onset;
-uniform float flux;
+
+
 
 #define TWO_PI 6.283
 
