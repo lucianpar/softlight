@@ -187,7 +187,7 @@ public:
       std::cout << "couldnt find point vert in path" << std::endl;
     }
 
-    al::FilePath objFP = searchPaths.find("BaseMesh.obj");
+    al::FilePath objFP = searchPaths.find("floatBody.obj");
     if (objFP.valid()) {
       objPath = objFP.filepath();
       std::cout << "Found file at: " << objPath << std::endl;

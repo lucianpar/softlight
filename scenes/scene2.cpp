@@ -25,7 +25,6 @@
 
 // MY CUSTOM INCLUDES:
 #include "../eoys-mesh-fx/ripple.hpp"
-#include "../eoys-mesh-fx/scatter.hpp"
 #include "../eoys-mesh-fx/vfxUtility.hpp"
 // #include "../meshMorph.hpp"
 #include "../eoys-mesh-fx/scatter.hpp"
@@ -46,20 +45,32 @@
 *
 
 */
+#define nAgentsScene2 30
 
-int sceneIndex = 1;
-struct Common {};
+int sceneIndex = 2;
+struct Common {
+
+  // scene 2
+  float blobPosX[nAgentsScene2];
+  float blobPosY[nAgentsScene2];
+  float blobPosZ[nAgentsScene2];
+  float blobQuatW[nAgentsScene2];
+  float blobQuatX[nAgentsScene2];
+  float blobQuatY[nAgentsScene2];
+  float blobQuatZ[nAgentsScene2];
+};
 
 class MyApp : public al::DistributedAppWithState<Common> {
 public:
   ////INITIAL OBJECTS AND DECLARATIONS////
   // ->
   al::Light light;
-  // Light light;
   al::Material material;
   // GLOBAL TIME PARAMS//
   double globalTime = 0;
-  double sceneTime = 0;
+  float localTime = 0;
+  al::Parameter sceneTime{"SceneTime", 0.0, 0.0, 600.0};
+  al::ParameterBool running{"running", "0", true};
 
   al::Vec3f randomVec3f(float scale) {
     return al::Vec3f(al::rnd::uniformS(), al::rnd::uniformS(),
@@ -78,10 +89,7 @@ public:
   std::vector<al::Vec3f> force;
   Creature creature;
   // PARAMS
-  float scene2Boundary = 30.0f;
-  bool inSphereScene2 = true;
-  float blobSeperationThresh = 2.0f;
-  int nAgentsScene2 = 30;
+  // int nAgentsScene2 = 30;
   float blobsSpeedScene2 = 0.1;
   float blobSizeScene2 = 1.8;
   float shellIncrementScene1;
@@ -90,9 +98,14 @@ public:
   // Creature creature;
   std::vector<al::Vec3f> colorPallete = {
       {0.9f, 0.0f, 0.4}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
-  float currentSpeedScene2 = 0.1f;
-  float targetSpeedScene2 = 0.1f;
-  float interpRateScene2 = 0.05f;
+
+  al::ParameterBool inSphereScene2{"inSphereScene2", "2", true};
+  al::Parameter blobSeperationThresh{"blobSeperationThresh", "2", 2.0, 0.0,
+                                     10.0};
+  al::Parameter scene2Boundary{"scene2Boundary", "2", 1.0, 0.0, 80.0};
+  al::Parameter currentSpeedScene2{"currentSpeedScene2", "2", 0.1, 0.0, 50.0};
+  al::Parameter targetSpeedScene2{"targetSpeedScene2", "2", 0.1, 0.0, 50.0};
+  al::Parameter interpRateScene2{"interpRateScene2", "2", 0.01, 0.0, 1.0};
 
   // MESH EFFECTS//
   VertexEffectChain blobsEffectChain;
@@ -115,22 +128,34 @@ public:
     nav().pos(0, 0, 0);
 
     // SCENE 2 CREATE /////
+
+    parameterServer() << sceneTime << running;
+    parameterServer() << blobSeperationThresh << scene2Boundary;
+    parameterServer() << currentSpeedScene2 << targetSpeedScene2
+                      << interpRateScene2;
+    parameterServer() << inSphereScene2;
+    // if (isPrimary()) {
     addSphere(blobMesh, blobSizeScene2, 40, 40);
     blobMesh.primitive(al::Mesh::TRIANGLES);
-    for (int i = 0; i < blobMesh.vertices().size(); i++) {
-    }
     blobMesh.generateNormals();
     creature.addStarfish(starCreatureMesh);
     starCreatureMesh.update();
 
     for (int b = 0; b < nAgentsScene2; ++b) {
       al::Nav p;
-      p.pos() = randomVec3f(5);
-      p.quat()
-          .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
-               al::rnd::uniformS())
-          .normalize();
       blobs.push_back(p);
+    }
+
+    // Only assign random positions and orientations on primary node
+    if (isPrimary()) {
+      for (int b = 0; b < nAgentsScene2; ++b) {
+        blobs[b].pos() = randomVec3f(5.0f);
+        blobs[b]
+            .quat()
+            .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
+                 al::rnd::uniformS())
+            .normalize();
+      }
     }
 
     blobMesh.update();
@@ -141,68 +166,107 @@ public:
     blobsEffectChain.pushBack(&blobsRippleX);
     starRipple.setParams(1.0, 1.0, 1.0, 'z');
     starEffectChain.pushBack(&starRipple);
-    scene2Boundary = 1.0;
+    // scene2Boundary = 1.0;
+    // }
 
     // SCENE 2 CREAT END /////
   }
 
-  ////BASIC TRIGGERING////
-  bool onKeyDown(const al::Keyboard &k) override { return true; }
-  //  float newSpeed = 0.0f;
   void onAnimate(double dt) override {
-    // Update global time
-    globalTime += dt;
-    sceneTime += dt;
 
-    // Update the sequencer
-    sequencer().update(globalTime);
-    std::cout << "global time: " << globalTime << std::endl;
-    fflush(stdout);
+    if (running == true) {
+      // Update global time
+      if (isPrimary()) {
+        globalTime += dt;
+        // localTime += dt;
+        sceneTime = sceneTime + dt;
 
-    // Set speed transitions via targetSpeedScene2
-    if (sceneTime < 1.0) {
-      targetSpeedScene2 = 3.0;
-    } else if (sceneTime < 5.0) {
-      targetSpeedScene2 = 0.1;
-    } else if (sceneTime < 8.0) {
-      targetSpeedScene2 = 0.2;
-    } else if (sceneTime < 11.0) {
-      targetSpeedScene2 = 0.05;
-    } else {
-      targetSpeedScene2 = 0.3;
-    }
-
-    // Smooth the speed
-    currentSpeedScene2 +=
-        (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
-
-    // Expand boundary once early
-    if (sceneTime >= 0.2) {
-      scene2Boundary = 15.0;
-    }
-
-    // Animate all blobs
-    for (int i = 0; i < blobs.size(); ++i) {
-      al::Vec3f pos = blobs[i].pos();
-
-      if (pos.mag() >= scene2Boundary) {
-        blobs[i].faceToward(al::Vec3f(0),
-                            0.005); // slow turn rate to avoid jitter
-        blobs[i].moveF(blobSizeScene2);
+        sequencer().update(globalTime);
+        std::cout << "global time: " << globalTime << std::endl;
+        fflush(stdout);
       }
 
-      blobs[i].moveF(currentSpeedScene2 * 30.0f); // use smoothed speed
-      blobs[i].step(dt);
+      // Set speed transitions via targetSpeedScene2
+
+      if (sceneIndex == 2) {
+        if (sceneTime < 1.0) {
+          // scene2Boundary = 30.0;
+          targetSpeedScene2 = 5.0;
+        } else if (sceneTime < 5.0) {
+
+          targetSpeedScene2 = 0.1;
+        } else if (sceneTime < 8.0) {
+          targetSpeedScene2 = 0.2;
+        } else if (sceneTime < 11.0) {
+          targetSpeedScene2 = 0.05;
+        } else if (sceneTime >= 20.0) {
+          targetSpeedScene2 = 2.0;
+          // scene2Boundary = 5.0;
+        }
+
+        // Smooth the speed
+        currentSpeedScene2 =
+            currentSpeedScene2 +
+            (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
+
+        // Expand boundary once early
+        if (sceneTime >= 0.2) {
+          scene2Boundary = 15.0;
+        }
+
+        // Animate all blobs
+        if (isPrimary()) {
+          for (int i = 0; i < blobs.size(); ++i) {
+            al::Vec3f pos = blobs[i].pos();
+
+            if (pos.mag() >= scene2Boundary) {
+              blobs[i].faceToward(al::Vec3f(0),
+                                  0.005); // slow turn rate to avoid jitter
+              blobs[i].moveF(blobSizeScene2);
+            }
+            // for setting state for renderers
+            blobs[i].moveF(currentSpeedScene2 * 30.0f); // use smoothed speed
+            blobs[i].step(dt);
+            state().blobPosX[i] = blobs[i].pos().x;
+            state().blobPosY[i] = blobs[i].pos().y;
+            state().blobPosZ[i] = blobs[i].pos().z;
+            state().blobQuatW[i] = blobs[i].quat().w;
+            state().blobQuatX[i] = blobs[i].quat().x;
+            state().blobQuatY[i] = blobs[i].quat().y;
+            state().blobQuatZ[i] = blobs[i].quat().z;
+          }
+        }
+        if (!isPrimary()) {
+          // updating pos and turning state
+          for (int i = 0; i < blobs.size(); ++i) {
+            blobs[i].pos().set(state().blobPosX[i], state().blobPosY[i],
+                               state().blobPosZ[i]);
+
+            // SETTING QUAT
+
+            blobs[i].quat().set(state().blobQuatW[i], state().blobQuatX[i],
+                                state().blobQuatY[i], state().blobQuatZ[i]);
+            // more accurate but less efficient
+
+            // blobs[i]
+            //     .quat()
+            //     .set(blobs[i].pos().x, blobs[i].pos().y,
+            //     blobs[i].pos().z, 1.0f) .normalize(); // more efficient but
+            //     less interesting
+            // turning weird? come here
+          }
+        }
+
+        // Apply mesh effects + regenerate normals
+        blobsEffectChain.process(blobMesh, sceneTime);
+        blobMesh.generateNormals();
+        blobMesh.update();
+
+        starEffectChain.process(starCreatureMesh, sceneTime);
+        starCreatureMesh.generateNormals();
+        starCreatureMesh.update();
+      }
     }
-
-    // Apply mesh effects + regenerate normals
-    blobsEffectChain.process(blobMesh, sceneTime);
-    blobMesh.generateNormals();
-    blobMesh.update();
-
-    starEffectChain.process(starCreatureMesh, sceneTime);
-    starCreatureMesh.generateNormals();
-    starCreatureMesh.update();
   }
 
   // END OF ANIMATE CALLBACK
@@ -210,13 +274,13 @@ public:
   void onDraw(al::Graphics &g) override {
 
     //// SCENE 1 START OF DRAW /////
-    if (sceneIndex == 1) {
+    if (sceneIndex == 2) {
 
       // SCENE 2 DRAW ////
 
       g.blendTrans();
       g.depthTesting(true);
-      g.clear(0.0, 0.0, 0.09 + ((sceneTime / (118 - 334)) * 0.8));
+      g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334 - 118)) * 0.8));
 
       g.lighting(true);
       // lighting from karl's example
