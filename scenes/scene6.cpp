@@ -14,8 +14,10 @@
 #include "al/math/al_Vec.hpp"
 #include "al/scene/al_SynthSequencer.hpp"
 #include "al/ui/al_ControlGUI.hpp"
+#include "al/ui/al_FileSelector.hpp"
 #include "al/ui/al_Parameter.hpp"
 #include "al/ui/al_PresetSequencer.hpp"
+
 // #include "al/graphics/al_Asset.hpp"
 #include "al/graphics/al_Graphics.hpp"
 #include "al/graphics/al_Mesh.hpp"
@@ -49,6 +51,8 @@
 
 int sceneIndex = 1;
 
+std::string slurp(const std::string &fileName);
+
 // using namespace al;
 
 struct Common {};
@@ -59,6 +63,12 @@ public:
   // ->
   al::Light light;
   al::Material material;
+  al::FileSelector selector;
+  al::SearchPaths searchPaths;
+  std::string pointFragPath;
+  std::string pointVertPath;
+  std::string pointGeomPath;
+  al::ShaderProgram pointShader;
 
   //// SCENE 6 DECLARE START
 
@@ -101,9 +111,34 @@ public:
   void onInit() override {
     // cuddlebone stuff
     gam::sampleRate(audioIO().framesPerSecond());
+
+    searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
+    al::FilePath frag = searchPaths.find("point-fragment.glsl");
+    if (frag.valid()) {
+      pointFragPath = frag.filepath();
+      std::cout << "Found file at: " << pointFragPath << std::endl;
+    } else {
+      std::cout << "couldnt find point frag in path" << std::endl;
+    }
+    al::FilePath geom = searchPaths.find("point-geometry.glsl");
+    if (frag.valid()) {
+      pointGeomPath = geom.filepath();
+      std::cout << "Found file at: " << pointGeomPath << std::endl;
+    } else {
+      std::cout << "couldnt find point geom in path" << std::endl;
+    }
+    al::FilePath vert = searchPaths.find("point-vertex.glsl");
+    if (vert.valid()) {
+      pointVertPath = vert.filepath();
+      std::cout << "Found file at: " << pointVertPath << std::endl;
+    } else {
+      std::cout << "couldnt find point vert in path" << std::endl;
+    }
   }
 
   void onCreate() override {
+    pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
+                        slurp(pointGeomPath));
     ////BIOLERPLATE////
     // nav().pos(al::Vec3d(jellies[0].pos())); // Set the camera to view the
     // scene
@@ -116,7 +151,11 @@ public:
     creature.makeJellyfish(
         jellyCreatureMesh, 0.6f, 72, 48, 8, 40, 40, 4.0f, 0.25f, 5.5f,
         1.0f); // less resolution than default by turning tendrils down
-
+    for (int i = 0; i < jellyCreatureMesh.vertices().size(); ++i) {
+      jellyCreatureMesh.color(1.0, 1, 1,
+                              1); // Orange particles with alpha transparency
+      jellyCreatureMesh.texCoord(1.0f, 0.0f);
+    }
     jellyCreatureMesh.scale(jelliesizeScene2);
     jellyCreatureMesh.primitive(al::Mesh::POINTS);
     jellyCreatureMesh.generateNormals();
@@ -195,6 +234,7 @@ public:
       // SCENE 6 WORLD LIGHTING
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+      glEnable(GL_PROGRAM_POINT_SIZE);
       g.depthTesting(true);
       g.clear(0.1, 0.0, 0.3);
 
@@ -204,7 +244,7 @@ public:
       light.diffuse(al::RGB(1, 1, 1.0));
       g.light(light);
       material.specular(1.0);
-      material.shininess(128);
+      material.shininess(200);
       g.material(material);
 
       // SCENE 6 SEQUENCING
@@ -216,7 +256,10 @@ public:
         g.pushMatrix();
         g.translate(jellies[i].pos());
         g.rotate(jellies[i].quat());
-        g.color(1.0f, 0.4f, 0.7f, flicker);
+        g.shader(pointShader);
+        pointShader.uniform("pointSize", 0.02);
+        pointShader.uniform("inputColor", al::Vec4f(1.0f, 0.4f, 0.7f, flicker));
+
         g.draw(jellyCreatureMesh);
         g.popMatrix();
       }
@@ -238,4 +281,11 @@ int main() {
 
   app.start();
   return 0;
+}
+
+std::string slurp(const std::string &fileName) {
+  std::ifstream file(fileName);
+  std::string contents((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+  return contents;
 }
