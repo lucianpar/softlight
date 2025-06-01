@@ -190,7 +190,7 @@ public:
 
       if (sceneIndex == 2) {
         if (sceneTime < 1.0) {
-          // scene2Boundary = 30.0;
+          scene2Boundary = 30.0;
           targetSpeedScene2 = 5.0;
         } else if (sceneTime < 5.0) {
 
@@ -211,7 +211,7 @@ public:
 
         // Expand boundary once early
         if (sceneTime >= 0.2) {
-          scene2Boundary = 15.0;
+          scene2Boundary = 4.0;
         }
 
         // Animate all blobs
