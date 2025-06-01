@@ -49,7 +49,7 @@
 
 */
 
-int sceneIndex = 1;
+int sceneIndex = 6;
 
 std::string slurp(const std::string &fileName);
 
@@ -79,16 +79,18 @@ public:
   Creature creature;
 
   // SCENE 6 PARAMS
-  float scene2Boundary = 20.0f;
+  float scene2Boundary = 50.0f;
   bool inSphereScene2 = true;
-  float jellieseperationThresh = 2.0f;
+  float jellieseperationThresh = 4.0f;
   int nAgentsScene6 = 6;
-  float jelliesSpeedScene2 = 4.0;
-  float jelliesizeScene2 = 2.5;
+  float jelliesSpeedScene2 = 3.0;
+  float jelliesizeScene2 = 5.0;
   float pointSize = 2.5;
   std::vector<al::Vec3f> colorPallete = {
       {1.0f, 0.0f, 0.5}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
   float flicker;
+  float scene6pulseSpeed = 0.4;
+  float scene6pulseAmount = 0.2;
 
   // SCENE 6  MESH EFFECTS//
   AutoPulseEffect jellyPulse;
@@ -137,6 +139,7 @@ public:
   }
 
   void onCreate() override {
+    nav().pos(0, 0, 0);
     pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
                         slurp(pointGeomPath));
     ////BIOLERPLATE////
@@ -145,8 +148,6 @@ public:
     sequencer().playSequence();
 
     // //INITIALIZE LIGHTING
-
-    nav().pos(0, 0, 0);
 
     creature.makeJellyfish(
         jellyCreatureMesh, 0.6f, 72, 48, 8, 40, 40, 4.0f, 0.25f, 5.5f,
@@ -160,8 +161,10 @@ public:
     jellyCreatureMesh.primitive(al::Mesh::POINTS);
     jellyCreatureMesh.generateNormals();
     jellyPulse.setBaseMesh(jellyCreatureMesh.vertices());
-    jellyRippleY.setParams(0.2, 0.005, 2.0, 'y');
-    jellyEffectChain.pushBack(&jellyRippleY);
+    // jellyRippleY.setParams(0.1, 0.1, 2.0, 'y');
+    jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
+    // jellyEffectChain.pushBack(&jellyRippleY);
+    jellyEffectChain.pushBack(&jellyPulse);
 
     jellyCreatureMesh.update();
 
@@ -201,27 +204,28 @@ public:
       float t = globalTime + i * 10.0f; // moving at slightly diff rates
 
       // drifting sort of
-      float wobbleAmount = 0.02f * std::sin(t * 0.7f);
-      jellies[i].turnF(0.007f + wobbleAmount); //
+      float wobbleAmount = 0.01f * std::sin(t * 0.7f);
+      jellies[i].turnF(0.004f + wobbleAmount); //
 
       if (jellies[i].pos().mag() > scene2Boundary) {
-        jellies[i].faceToward(al::Vec3f(0), 0.02f);
+        jellies[i].faceToward(al::Vec3f(0), 0.005f);
       }
 
       // bobbing
-      float bob = 0.003f * std::sin(t * 0.5f);
-      jellies[i].pos().y += bob;
+      // float bob = 0.001f * std::sin(t * 0.3f);
+      // jellies[i].pos().y += bob;
 
       // standard move forward
-      jellies[i].moveF(jelliesSpeedScene2);
+      jellies[i].moveF(jelliesSpeedScene2 * 8.0);
       jellies[i].step(dt);
     }
 
     // SCENE 6 UPDATE AND PROCESS
+    jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
     jellyEffectChain.process(jellyCreatureMesh, sceneTime);
 
     jellyCreatureMesh.update();
-    flicker = 0.1f + 0.05f * std::sin(sceneTime * 2.0);
+    flicker = 0.25f + 0.05f * std::sin(sceneTime * 2.0);
     // end scene 6 animate
   }
   // END OF ANIMATE CALLBACK
@@ -229,12 +233,13 @@ public:
   void onDraw(al::Graphics &g) override {
 
     //// SCENE 1 jellyT OF DRAW /////
-    if (sceneIndex == 1) {
+    if (sceneIndex == 6) {
 
       // SCENE 6 WORLD LIGHTING
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-      glEnable(GL_PROGRAM_POINT_SIZE);
+
+      // glEnable(GL_PROGRAM_POINT_SIZE); <------COMMENTED OUT POINT SHADER
       g.depthTesting(true);
       g.clear(0.1, 0.0, 0.3);
 
@@ -256,10 +261,14 @@ public:
         g.pushMatrix();
         g.translate(jellies[i].pos());
         g.rotate(jellies[i].quat());
-        g.shader(pointShader);
-        pointShader.uniform("pointSize", 0.02);
-        pointShader.uniform("inputColor", al::Vec4f(1.0f, 0.4f, 0.7f, flicker));
-
+        g.pointSize(2.0); //<----- REMOVE IF USING POINT SHADER
+        g.color(1.0f, 0.4f, 0.7f,
+                flicker); //<----- REMOVE IF USING POINT SHADER
+        // g.shader(pointShader);<------COMMENTED OUT POINT
+        //  pointShader.uniform("pointSize", 0.02); <------COMMENTED OUT POINT
+        //  SHADER
+        // pointShader.uniform("inputColor", al::Vec4f(1.0f, 0.4f, 0.7f,
+        // flicker)); <------COMMENTED OUT POINT SHADER
         g.draw(jellyCreatureMesh);
         g.popMatrix();
       }
