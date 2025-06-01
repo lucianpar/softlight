@@ -61,11 +61,13 @@ public:
 
   std::string vertPathScene5;
   std::string fragPathScene5;
-  bool shaderInitFlag = false;
+  al::Parameter sceneTime{"sceneTime", "", 0.0, 0.0, 300.0};
+
+  al::ParameterBool running{"running", "0", false};
 
   // Global Time
   double globalTime = 0;
-  double sceneTime = 0.0;
+  // double sceneTime = 0.0;
   int sceneIndex = 5;
 
   void onInit() override {
@@ -97,14 +99,14 @@ public:
 
     // scene 5 and 4
     if (sceneIndex == 5) {
-      shaderInitFlag = true;
+
       shadedSphere.update();
     }
   }
 
   void onAnimate(double dt) override {
     globalTime += dt;
-    sceneTime += dt;
+    sceneTime = sceneTime + dt;
     std::cout << globalTime << std::endl;
   }
 

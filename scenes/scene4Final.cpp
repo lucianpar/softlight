@@ -35,9 +35,9 @@
 #include "../utility/soundObject.hpp"
 // #include "../imageToMesh.hpp"
 // #include "../imageToSphere.hpp"
+#include "../eoys-shader/shaderToSphere.hpp"
 #include "../utility/attractors.hpp"
 #include "../utility/imageColorToMesh.hpp"
-#include "softlight-sphere-new/softlight/softlight/eoys-shader/shaderToSphere.hpp"
 
 /*
 * sequence
