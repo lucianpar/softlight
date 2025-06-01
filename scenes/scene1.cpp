@@ -48,6 +48,8 @@
 #include "../utility/attractors.hpp"
 #include "../utility/imageColorToMesh.hpp"
 
+std::string slurp(const std::string &fileName);
+
 struct Common {
   double sceneTime;
   int sceneIndex;
@@ -75,8 +77,8 @@ public:
   // Global Time
   int sceneIndex = 0;
   int previousIndex = 0;
-  double globalTime = 0;
-  double sceneTime = 0;
+  double globalTime = 64;
+  double sceneTime = 64;
   bool running = false;
   std::string objPath;
   std::string Song1Path;
@@ -85,6 +87,10 @@ public:
   std::string Song4Path;
   std::string Song5Path;
   std::string Song6Path;
+  std::string pointFragPath;
+  std::string pointVertPath;
+  std::string pointGeomPath;
+  al::ShaderProgram pointShader;
 
   ////SCENE 1 DECLARE  //////
 
@@ -159,6 +165,28 @@ public:
     // FILE PATH STUFF
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
 
+    al::FilePath frag = searchPaths.find("point-fragment.glsl");
+    if (frag.valid()) {
+      pointFragPath = frag.filepath();
+      std::cout << "Found file at: " << pointFragPath << std::endl;
+    } else {
+      std::cout << "couldnt find point frag in path" << std::endl;
+    }
+    al::FilePath geom = searchPaths.find("point-geometry.glsl");
+    if (frag.valid()) {
+      pointGeomPath = geom.filepath();
+      std::cout << "Found file at: " << pointGeomPath << std::endl;
+    } else {
+      std::cout << "couldnt find point geom in path" << std::endl;
+    }
+    al::FilePath vert = searchPaths.find("point-vertex.glsl");
+    if (vert.valid()) {
+      pointVertPath = vert.filepath();
+      std::cout << "Found file at: " << pointVertPath << std::endl;
+    } else {
+      std::cout << "couldnt find point vert in path" << std::endl;
+    }
+
     al::FilePath objFP = searchPaths.find("BaseMesh.obj");
     if (objFP.valid()) {
       objPath = objFP.filepath();
@@ -213,6 +241,8 @@ public:
   }
 
   void onCreate() override {
+    pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
+                        slurp(pointGeomPath));
 
     cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
     if (!cuttleboneDomain) {
@@ -255,6 +285,7 @@ public:
       bodyMesh.color(
           1.0, 0.6, 0.3,
           startingBodyAlpha); // Orange particles with alpha transparency
+      bodyMesh.texCoord(1.0f, 0.0f);
     }
     bodyMesh.update();
     bodyMesh.primitive(al::Mesh::POINTS);
@@ -462,21 +493,15 @@ public:
         attractorSpeedScene1 = 0.00005;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
-        // mainEffectChain.process(attractorMesh, sceneTime); //ripple commented
-        // out
+        // mainEffectChain.process(attractorMesh, sceneTime); //ripple
+        // commented out
       }
 
       attractorMesh.update();
       // body mesh effects
       if (sceneTime >= bodyCloudAppear) {
         if (bodyAlphaIncScene1 < 1.0) {
-          bodyAlphaIncScene1 += 0.0001;
-          for (int i = 0; i < bodyMesh.vertices().size(); ++i) {
-            al::Color currentColor = bodyMesh.colors()[i];
-            currentColor.a =
-                startingBodyAlpha + bodyAlphaIncScene1; // Increment alpha only
-            bodyMesh.colors()[i] = currentColor;
-          }
+          bodyAlphaIncScene1 += 0.0000000000000001;
         }
       }
       if (sceneTime >= moveInEvent) {
@@ -487,11 +512,8 @@ public:
         bodyScatter.triggerIn(true);
 
         attractorMesh.translate(
-            //     0, (3.5) * ((sceneTime - moveInEvent+0.1) / (30)),
-            //     (-4) * 0.5 * ((sceneTime - moveInEvent+0.1) / (moveInEvent -
-            //     118)));
-            // // attractorMesh.scale(0.9999);
-            0, 40.5 * 0.001, -80.0 * 0.001);
+
+            0, 100.5 * 0.001, -80.0 * 0.001);
       }
 
       bodyEffectChain.process(bodyMesh, sceneTime);
@@ -505,6 +527,7 @@ public:
 
     // SCENE 1 DRAW /////
     if (running == true) {
+      glEnable(GL_PROGRAM_POINT_SIZE);
 
       if (sceneTime < shellTurnsWhiteEvent) {
         shellIncrementScene1 = ((sceneTime) / (shellTurnsWhiteEvent));
@@ -522,7 +545,12 @@ public:
       g.draw(attractorMesh);
 
       if (sceneTime >= bodyCloudAppear) {
+        g.shader(pointShader);
+        pointShader.uniform("pointSize", 0.01);
+        pointShader.uniform("inputColor",
+                            al::Vec4f(1.0, 0.6, 0.3, bodyAlphaIncScene1));
         g.draw(bodyMesh);
+        g.shader();
       }
     } else {
       g.clear(0.0);
@@ -579,4 +607,11 @@ int main() {
     app.configureAudio(44100, 512, 2, 0);
   app.start();
   return 0;
+}
+
+std::string slurp(const std::string &fileName) {
+  std::ifstream file(fileName);
+  std::string contents((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+  return contents;
 }

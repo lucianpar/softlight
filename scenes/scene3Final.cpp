@@ -201,7 +201,7 @@ public:
 
   void onDraw(al::Graphics &g) override {
 
-    // SCENE 4 DRAW
+    // SCENE 3 DRAW
 
     g.depthTesting(true);
 
