@@ -90,6 +90,9 @@ public:
   // Creature creature;
   std::vector<al::Vec3f> colorPallete = {
       {0.9f, 0.0f, 0.4}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
+  float currentSpeedScene2 = 0.1f;
+  float targetSpeedScene2 = 0.1f;
+  float interpRateScene2 = 0.05f;
 
   // MESH EFFECTS//
   VertexEffectChain blobsEffectChain;
@@ -147,58 +150,59 @@ public:
   bool onKeyDown(const al::Keyboard &k) override { return true; }
   //  float newSpeed = 0.0f;
   void onAnimate(double dt) override {
-
-    // SET SCENES AND TIME TRANSITIONS ///
+    // Update global time
     globalTime += dt;
     sceneTime += dt;
 
     // Update the sequencer
-    sequencer().update(globalTime); // XXX important to call this
+    sequencer().update(globalTime);
     std::cout << "global time: " << globalTime << std::endl;
     fflush(stdout);
 
-    // SCENE 2 ANIMATE /////
-    // ISSUES WITH MOVEMENT THAT I NEED TO FIX //
-    if (sceneTime >= 0) {
-      // boundary is initially set super small so they are constrained
+    // Set speed transitions via targetSpeedScene2
+    if (sceneTime < 1.0) {
+      targetSpeedScene2 = 3.0;
+    } else if (sceneTime < 5.0) {
+      targetSpeedScene2 = 0.1;
+    } else if (sceneTime < 8.0) {
+      targetSpeedScene2 = 0.2;
+    } else if (sceneTime < 11.0) {
+      targetSpeedScene2 = 0.05;
+    } else {
+      targetSpeedScene2 = 0.3;
+    }
+
+    // Smooth the speed
+    currentSpeedScene2 +=
+        (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
+
+    // Expand boundary once early
+    if (sceneTime >= 0.2) {
       scene2Boundary = 15.0;
     }
-    if (sceneTime >= 0 && sceneTime <= 1.0) {
-      blobsSpeedScene2 = 3.0;
-    }
-    if (sceneTime >= 1.0 && sceneTime <= 5.0) {
-      blobsSpeedScene2 = 0.1;
-    }
 
-    if (sceneTime >= 5.0) {
-      blobsSpeedScene2 = 0.2;
-    }
-    if (sceneTime >= 8.0) {
-      blobsSpeedScene2 = 0.05;
-    }
-    if (sceneTime >= 11.0) {
-      blobsSpeedScene2 = 0.3;
-    }
-
+    // Animate all blobs
     for (int i = 0; i < blobs.size(); ++i) {
-      // inSphereScene2 = true;
-      if (blobs[i].pos().mag() >= scene2Boundary) {
-        blobs[i].faceToward(al::Vec3f(0), 0.02);
+      al::Vec3f pos = blobs[i].pos();
+
+      if (pos.mag() >= scene2Boundary) {
+        blobs[i].faceToward(al::Vec3f(0),
+                            0.005); // slow turn rate to avoid jitter
         blobs[i].moveF(blobSizeScene2);
       }
 
-      blobs[i].moveF(blobsSpeedScene2 * 30.0);
-
+      blobs[i].moveF(currentSpeedScene2 * 30.0f); // use smoothed speed
       blobs[i].step(dt);
     }
 
+    // Apply mesh effects + regenerate normals
     blobsEffectChain.process(blobMesh, sceneTime);
-
-    // starEffectChain.process(starCreatureMesh, sceneTime);
-
+    blobMesh.generateNormals();
     blobMesh.update();
 
-    // SCENE 2 ANIMATE END /////
+    starEffectChain.process(starCreatureMesh, sceneTime);
+    starCreatureMesh.generateNormals();
+    starCreatureMesh.update();
   }
 
   // END OF ANIMATE CALLBACK
