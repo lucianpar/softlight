@@ -174,7 +174,7 @@ public:
     }
 
     sequencer().update(globalTime);
-    std::cout << "global time: " << globalTime << std::endl;
+    // std::cout << "global time: " << globalTime << std::endl;
     fflush(stdout);
 
     for (int i = 0; i < jellies.size(); ++i) {

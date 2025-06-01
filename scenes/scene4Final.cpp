@@ -58,25 +58,32 @@ public:
   al::Material material;
   ShadedSphere shadedSphere;
 
+  al::Parameter sceneTime{"sceneTime", "", 0.0, 0.0, 300.0};
+
+  al::ParameterBool running{"running", "0", false};
+
   // scene 4
 
   std::string vertPathScene4;
   std::string fragPathScene4;
-  bool shaderInitFlag = false;
 
   // Meshes and Effects
 
   // Global Time
   double globalTime = 0;
-  double sceneTime = 0.0;
+  // double sceneTime = 0.0;
   int sceneIndex = 4;
 
   void onInit() override {
+
+    parameterServer() << sceneTime;
+
     gam::sampleRate(audioIO().framesPerSecond());
 
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
 
     // scene 4
+
     al::FilePath vertPath4 = searchPaths.find("standard.vert");
     if (vertPath4.valid()) {
       vertPathScene4 = vertPath4.filepath();
@@ -92,31 +99,45 @@ public:
       std::cout << "couldnt find frag scene 4 in path" << std::endl;
     }
   }
+  bool onKeyDown(const al::Keyboard &k) override {
+
+    if (isPrimary()) {
+
+      if (k.key() == ' ' && running == false) {
+        running = true;
+        std::cout << "started running" << std::endl;
+      } else if (k.key() == ' ' && running == true) {
+        running = false;
+        std::cout << "stopped running" << std::endl;
+      }
+    }
+  }
 
   void onCreate() override {
-    shadedSphere.setSphere(15.0, 20);
 
     // scene 4
 
     if (sceneIndex == 4) {
+      shadedSphere.setSphere(15.0, 20);
+      shadedSphere.setShaders(vertPathScene4, fragPathScene4);
       shadedSphere.update();
-      shaderInitFlag = true;
     }
   }
 
   void onAnimate(double dt) override {
-    globalTime += dt;
-    sceneTime += dt;
+
+    if (running == true) {
+
+      globalTime += dt;
+      sceneTime = sceneTime + dt;
+    }
   }
 
   void onDraw(al::Graphics &g) override {
 
     // scene 4
     g.clear(0.0);
-    if (shaderInitFlag) {
-      shadedSphere.setShaders(vertPathScene4, fragPathScene4);
-      shaderInitFlag = false;
-    }
+
     g.shader(shadedSphere.shader());
     shadedSphere.setUniformFloat("u_time", sceneTime);
 
