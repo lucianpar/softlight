@@ -179,7 +179,9 @@ public:
     spatializer->compile();
 
     // FILE PATH STUFF
-    searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
+    searchPaths.addAppPaths();
+    searchPaths.addRelativePath("../..");
+    // searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
 
     // POINT SHADER PATHS
 
