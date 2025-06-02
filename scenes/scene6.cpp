@@ -160,46 +160,55 @@ public:
       state().jellyQuatZ[b] = p.quat().z;
     }
   }
-
+  double localTime;
   void onAnimate(double dt) override {
-    globalTime += dt;
-    sceneTime += dt;
-    if (globalTime == 118) {
-      sceneIndex = 2;
-      sceneTime = 0;
+    if (isPrimary()) {
+      globalTime += dt;
+      localTime += dt;
     }
-    if (globalTime == 334) {
-      sceneIndex = 3;
-      sceneTime = 0;
-    }
+    sceneTime = localTime;
 
-    sequencer().update(globalTime);
-    // std::cout << "global time: " << globalTime << std::endl;
+    // sequencer().update(globalTime);
+    std::cout << "global time: " << globalTime << std::endl;
     fflush(stdout);
+    if (isPrimary()) {
+      for (int i = 0; i < jellies.size(); ++i) {
+        float t = globalTime + i * 10.0f;
+        float wobbleAmount = 0.01f * std::sin(t * 0.7f);
+        jellies[i].turnF(0.004f + wobbleAmount);
+        if (jellies[i].pos().mag() > scene2Boundary.get())
+          jellies[i].faceToward(al::Vec3f(0), 0.005f);
+        jellies[i].moveF(jelliesSpeedScene2.get() * 8.0);
+        jellies[i].step(dt);
 
-    for (int i = 0; i < jellies.size(); ++i) {
-      float t = globalTime + i * 10.0f;
-      float wobbleAmount = 0.01f * std::sin(t * 0.7f);
-      jellies[i].turnF(0.004f + wobbleAmount);
-      if (jellies[i].pos().mag() > scene2Boundary.get())
-        jellies[i].faceToward(al::Vec3f(0), 0.005f);
-      jellies[i].moveF(jelliesSpeedScene2.get() * 8.0);
-      jellies[i].step(dt);
+        state().jellyX[i] = jellies[i].pos().x;
+        state().jellyY[i] = jellies[i].pos().y;
+        state().jellyZ[i] = jellies[i].pos().z;
+        state().jellyQuatW[i] = jellies[i].quat().w;
+        state().jellyQuatX[i] = jellies[i].quat().x;
+        state().jellyQuatY[i] = jellies[i].quat().y;
+        state().jellyQuatZ[i] = jellies[i].quat().z;
 
-      state().jellyX[i] = jellies[i].pos().x;
-      state().jellyY[i] = jellies[i].pos().y;
-      state().jellyZ[i] = jellies[i].pos().z;
-      state().jellyQuatW[i] = jellies[i].quat().w;
-      state().jellyQuatX[i] = jellies[i].quat().x;
-      state().jellyQuatY[i] = jellies[i].quat().y;
-      state().jellyQuatZ[i] = jellies[i].quat().z;
+        state().flicker =
+            0.25f +
+            0.05f * std::sin(sceneTime * 2.0); // move back outside is primary
+
+        // move back outside is primary?
+        jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
+        jellyEffectChain.process(jellyCreatureMesh, sceneTime);
+        jellyCreatureMesh.update();
+      }
+    }
+    if (!isPrimary()) {
+      for (int i = 0; i < jellies.size(); ++i) {
+        jellies[i].pos().set(state().jellyX[i], state().jellyY[i],
+                             state().jellyZ[i]);
+        jellies[i].quat().set(state().jellyQuatW[i], state().jellyQuatX[i],
+                              state().jellyQuatY[i], state().jellyQuatZ[i]);
+      }
     }
 
-    jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
-    jellyEffectChain.process(jellyCreatureMesh, sceneTime);
-    jellyCreatureMesh.update();
-
-    state().flicker = 0.25f + 0.05f * std::sin(sceneTime * 2.0);
+    // state().flicker = 0.25f + 0.05f * std::sin(sceneTime * 2.0);
   }
 
   void onDraw(al::Graphics &g) override {

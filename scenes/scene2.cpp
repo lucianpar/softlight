@@ -182,6 +182,7 @@ public:
         sceneTime = sceneTime + dt;
 
         sequencer().update(globalTime);
+
         std::cout << "global time: " << globalTime << std::endl;
         fflush(stdout);
       }
