@@ -525,7 +525,7 @@ public:
 
         attractorMesh.translate(
 
-            0, 100.5 * 0.0001, -80.0 * 0.0001);
+            -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
         attractorMesh.scale(0.995);
       }
 
