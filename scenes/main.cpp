@@ -439,44 +439,31 @@ public:
           sceneIndex = 1;
           sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer1().playSequence();
           std::cout << "started scene 1" << std::endl;
         } else if (globalTime >= 119.0 && globalTime < 119.0 + dt) {
           sceneIndex = 2;
-          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer2().playSequence();
           std::cout << "started scene 2" << std::endl;
         } else if (globalTime >= 335.0 && globalTime < 335.0 + dt) {
           sceneIndex = 3;
-          sceneIndexParam.set(sceneIndex);
-
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer3().playSequence();
           std::cout << "started scene 3" << std::endl;
         } else if (globalTime >= 444.0 && globalTime < 444.0 + dt) {
           sceneIndex = 4;
-          sceneIndexParam.set(sceneIndex);
-
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer4().playSequence();
           std::cout << "started scene 4" << std::endl;
         } else if (globalTime >= 936.0 && globalTime < 936.0 + dt) {
           sceneIndex = 5;
-          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer5().playSequence();
           std::cout << "started scene 5" << std::endl;
         } else if (globalTime >= 1105.0 && globalTime < 1105.0 + dt) {
           sceneIndex = 6;
-          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
-          sceneTimeParam.set(sceneTime);
           sequencer6().playSequence();
           std::cout << "started scene 6" << std::endl;
         }
@@ -486,9 +473,6 @@ public:
         // pTime.set(sceneTime);
         // pIndex.set(sceneIndex);
       } else {
-        sceneIndex = sceneIndexParam.get();
-        sceneTime = sceneTimeParam.get();
-
         // sceneTime = localTime;
       }
       shadedSphereScene3.update();
