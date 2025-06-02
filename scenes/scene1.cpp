@@ -476,23 +476,35 @@ public:
         attractorSpeedScene1 = 0.00005;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 5 * 0.00005, -5 * 0.00005);
       }
 
       if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
         attractorSpeedScene1 = 0.00015;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 5 * 0.0001, -5 * 0.0001);
       }
       if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
         attractorSpeedScene1 = 0.00001;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 0, -15 * 0.0002);
       }
 
       if (sceneTime >= stopSpeedUpEvent) {
         attractorSpeedScene1 = 0.00005;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
+        // attractorMesh.translate(
+
+        //     0, 0, -10 * 0.0002);
         // mainEffectChain.process(attractorMesh, sceneTime); //ripple
         // commented out
       }
@@ -513,7 +525,8 @@ public:
 
         attractorMesh.translate(
 
-            0, 100.5 * 0.001, -80.0 * 0.001);
+            0, 100.5 * 0.0001, -80.0 * 0.0001);
+        attractorMesh.scale(0.995);
       }
 
       bodyEffectChain.process(bodyMesh, sceneTime);
