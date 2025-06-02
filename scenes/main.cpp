@@ -45,6 +45,7 @@
 #include "../utility/staticSoundObject.hpp"
 // #include "../imageToMesh.hpp"
 // #include "../imageToSphere.hpp"
+#include "../eoys-shader/shaderToSphere.hpp"
 #include "../utility/attractors.hpp"
 #include "../utility/imageColorToMesh.hpp"
 
@@ -93,6 +94,16 @@ public:
   std::string pointVertPath;
   std::string pointGeomPath;
   al::ShaderProgram pointShader;
+  std::string vertPathScene3;
+  std::string fragPathScene3;
+  std::string vertPathScene4;
+  std::string fragPathScene4;
+  std::string vertPathScene5;
+  std::string fragPathScene5;
+
+  ShadedSphere shadedSphereScene3;
+  ShadedSphere shadedSphereScene4;
+  ShadedSphere shadedSphereScene5;
 
   // SCENE DECLERATIONS
 
@@ -113,6 +124,10 @@ public:
 
     // FILE PATH STUFF
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
+
+    // POINT SHADER PATHS
+
+    // probaboy can be in if primary
 
     al::FilePath frag = searchPaths.find("point-fragment.glsl");
     if (frag.valid()) {
@@ -143,6 +158,9 @@ public:
     } else {
       std::cout << "couldnt find basemesh in path" << std::endl;
     }
+
+    // AAUDIO PATHS
+
     if (isPrimary()) {
       al::FilePath audio1Fp = searchPaths.find("Song1.wav");
       if (audio1Fp.valid()) {
@@ -186,6 +204,56 @@ public:
       } else {
         std::cout << "couldnt find song6 in path" << std::endl;
       }
+
+      // scene 3 paths
+      al::FilePath vertPath3 = searchPaths.find("standard.vert");
+      if (vertPath3.valid()) {
+        vertPathScene3 = vertPath3.filepath();
+        std::cout << "Found file at: " << vertPathScene3 << std::endl;
+      } else {
+        std::cout << "couldnt find ver scene 4 in path" << std::endl;
+      }
+      al::FilePath fragPath3 =
+          searchPaths.find("SpruceMain.frag"); // switch to spruce main
+      if (fragPath3.valid()) {
+        fragPathScene3 = fragPath3.filepath();
+        std::cout << "Found file at: " << fragPathScene3 << std::endl;
+      } else {
+        std::cout << "couldnt find frag scene 4 in path" << std::endl;
+      }
+
+      // scene 4 paths :
+      al::FilePath vertPath4 = searchPaths.find("standard.vert");
+      if (vertPath4.valid()) {
+        vertPathScene4 = vertPath4.filepath();
+        std::cout << "Found file at: " << vertPathScene4 << std::endl;
+      } else {
+        std::cout << "couldnt find ver scene 4 in path" << std::endl;
+      }
+      al::FilePath fragPath4 = searchPaths.find("FoamMain.frag");
+      if (fragPath4.valid()) {
+        fragPathScene4 = fragPath4.filepath();
+        std::cout << "Found file at: " << fragPathScene4 << std::endl;
+      } else {
+        std::cout << "couldnt find frag scene 4 in path" << std::endl;
+      }
+
+      // scene 5 paths
+
+      al::FilePath vertPath5 = searchPaths.find("standard.vert");
+      if (vertPath5.valid()) {
+        vertPathScene5 = vertPath5.filepath();
+        std::cout << "Found file at: " << vertPathScene5 << std::endl;
+      } else {
+        std::cout << "couldnt find vert scene 5 in path" << std::endl;
+      }
+      al::FilePath fragPath5 = searchPaths.find("CrushedMain.frag");
+      if (fragPath5.valid()) {
+        fragPathScene5 = fragPath5.filepath();
+        std::cout << "Found file at: " << fragPathScene5 << std::endl;
+      } else {
+        std::cout << "couldnt find frag scene 5 in path" << std::endl;
+      }
     }
   }
 
@@ -205,6 +273,20 @@ public:
     // if (sceneIndex == 1) {
     //  std::string path =
     //  localAssetPath("../softlight-sphere-new/audio/Song2.wav");
+
+    // scene 3
+    shadedSphereScene3.setSphere(15.0, 20);
+    shadedSphereScene3.setShaders(vertPathScene3, fragPathScene3);
+    shadedSphereScene3.update();
+
+    // scene 4
+    shadedSphereScene4.setSphere(15.0, 20);
+    shadedSphereScene4.setShaders(vertPathScene4, fragPathScene4);
+    shadedSphereScene4.update();
+    // scene 5
+    shadedSphereScene5.setSphere(15.0, 20);
+    shadedSphereScene5.setShaders(vertPathScene5, fragPathScene5);
+    shadedSphereScene5.update();
 
     if (isPrimary()) {
       sequencer1().add<SoundObject>(0, 44000).set(
@@ -258,6 +340,7 @@ public:
         sceneIndex = 2;
         globalTime = 119.0;
         sceneTime = 0.0;
+        running = true;
         std::cout << "scene index: " << 2 << "global time: " << globalTime
                   << std::endl;
 
@@ -269,6 +352,7 @@ public:
         sceneIndex = 3;
         globalTime = 335.0;
         sceneTime = 0.0;
+        running = true;
         std::cout << "scene index: " << 3 << "global time: " << globalTime
                   << std::endl;
 
@@ -279,6 +363,7 @@ public:
         sceneIndex = 4;
         globalTime = 444.0;
         sceneTime = 0.0;
+        running = true;
         std::cout << "scene index: " << 4 << "global time: " << globalTime
                   << std::endl;
 
@@ -289,6 +374,7 @@ public:
         sceneIndex = 5;
         globalTime = 936.0;
         sceneTime = 0.0;
+        running = true;
         std::cout << "scene index: " << 5 << "global time: " << globalTime
                   << std::endl;
 
@@ -299,6 +385,7 @@ public:
         sceneIndex = 6;
         globalTime = 1105.0;
         sceneTime = 0.0;
+        running = true;
         std::cout << "scene index: " << 6 << "global time: " << globalTime
                   << std::endl;
 
@@ -329,6 +416,7 @@ public:
       // time : " << globalTime << std::endl;
       // localTime += dt;
       sceneTime = sceneTime + dt;
+      std::cout << globalTime << std::endl; // comment out later
 
       if (isPrimary()) {
         // globalTime += dt;
@@ -378,11 +466,35 @@ public:
   }
 
   void onDraw(al::Graphics &g) override {
+    // end of boilerplate
 
     // SCENE 1 DRAW /////
     if (running == true) {
+      if (sceneIndex == 3) {
+        g.clear(0.0);
 
-      // end of boilerplate
+        g.shader(shadedSphereScene3.shader());
+        shadedSphereScene3.setUniformFloat("u_time", sceneTime);
+
+        shadedSphereScene3.draw(g);
+      }
+      if (sceneIndex == 4) {
+        g.clear(0.0);
+
+        g.shader(shadedSphereScene4.shader());
+        shadedSphereScene4.setUniformFloat("u_time", sceneTime);
+
+        shadedSphereScene4.draw(g);
+      }
+
+      if (sceneIndex == 5) {
+        g.clear(0.0);
+
+        g.shader(shadedSphereScene5.shader());
+        shadedSphereScene5.setUniformFloat("u_time", sceneTime);
+
+        shadedSphereScene5.draw(g);
+      }
     }
   };
 

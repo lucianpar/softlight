@@ -56,7 +56,7 @@ public:
   al::Light light;
   // Light light;
   al::Material material;
-  ShadedSphere shadedSphereScene4;
+  ShadedSphere shadedSphereScene3;
 
   al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 300.0};
 
@@ -82,7 +82,7 @@ public:
 
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
 
-    // scene 4
+    // scene 3
 
     al::FilePath vertPath3 = searchPaths.find("standard.vert");
     if (vertPath3.valid()) {
@@ -119,9 +119,9 @@ public:
     // scene 4
 
     // if (sceneIndex == 4) {
-    shadedSphereScene4.setSphere(15.0, 20);
-    shadedSphereScene4.setShaders(vertPathScene3, fragPathScene3);
-    shadedSphereScene4.update();
+    shadedSphereScene3.setSphere(15.0, 20);
+    shadedSphereScene3.setShaders(vertPathScene3, fragPathScene3);
+    shadedSphereScene3.update();
     // }
   }
 
@@ -140,10 +140,10 @@ public:
     // scene 4
     g.clear(0.0);
 
-    g.shader(shadedSphereScene4.shader());
-    shadedSphereScene4.setUniformFloat("u_time", sceneTime);
+    g.shader(shadedSphereScene3.shader());
+    shadedSphereScene3.setUniformFloat("u_time", sceneTime);
 
-    shadedSphereScene4.draw(g);
+    shadedSphereScene3.draw(g);
   }
 
   // scene 4
