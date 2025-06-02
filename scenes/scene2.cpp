@@ -68,7 +68,7 @@ public:
   al::Material material;
   // GLOBAL TIME PARAMS//
   double globalTime = 0;
-  float localTime = 0;
+  double localTime = 0;
   al::Parameter sceneTime{"SceneTime", 0.0, 0.0, 600.0};
   al::ParameterBool running{"running", "0", true};
 
@@ -89,12 +89,7 @@ public:
   std::vector<al::Vec3f> force;
   Creature creature;
   // PARAMS
-  // int nAgentsScene2 = 30;
-  float blobsSpeedScene2 = 0.1;
-  float blobSizeScene2 = 1.8;
-  float shellIncrementScene1;
-  float particleIncrementScene1;
-  float pointSize = 3.0;
+
   // Creature creature;
   std::vector<al::Vec3f> colorPallete = {
       {0.9f, 0.0f, 0.4}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
@@ -102,10 +97,14 @@ public:
   al::ParameterBool inSphereScene2{"inSphereScene2", "2", true};
   al::Parameter blobSeperationThresh{"blobSeperationThresh", "2", 2.0, 0.0,
                                      10.0};
-  al::Parameter scene2Boundary{"scene2Boundary", "2", 1.0, 0.0, 80.0};
+  // al::Parameter scene2Boundary{"scene2Boundary", "2", 1.0, 0.0, 80.0};
   al::Parameter currentSpeedScene2{"currentSpeedScene2", "2", 0.1, 0.0, 50.0};
   al::Parameter targetSpeedScene2{"targetSpeedScene2", "2", 0.1, 0.0, 50.0};
   al::Parameter interpRateScene2{"interpRateScene2", "2", 0.01, 0.0, 1.0};
+  // al::Parameter blobSizeScene2{"blobSizeScene2", "2", 1.8, 0.0, 10.0};
+  float blobSizeScene2 = 1.5;
+  float scene2Boundary = 1.0;
+  ;
 
   // MESH EFFECTS//
   VertexEffectChain blobsEffectChain;
@@ -115,6 +114,40 @@ public:
 
   VertexEffectChain starEffectChain;
   RippleEffect starRipple;
+
+  // WIND PIECE SEQUENCING EVENTS (SCENE 2)
+  float windSpeedFastStart = 0.0f;
+  float windSpeedSlow1 = 3.0f;
+  float windSpeedSuperSlow = 3.5f;
+  float windSpeedMedFast1 = 11.0f;
+  float windSpeedSlow2 = 23.0f;
+  float windScaleLarge1 = 31.0f;
+  float windSpeedMed2 = 34.0f;
+  float windSpeedFast2 = 39.0f;
+  float windSpeedSlow3 = 44.0f;
+  float windScaleSmall1 = 49.0f;
+  float windSpeedMed3 = 49.0f;
+  float windSpeedSlow4 = 54.0f;
+  float windScaleHuge1 = 67.0f;
+  float windSpeedMed4 = 77.0f;
+  float windSpeedSlower5 = 93.0f;
+  float windScaleDownStart = 96.0f;
+  float windSpeedFast3 = 99.0f;
+  float windSpeedSlow5 = 101.0f;
+  float windSpeedFast4 = 104.0f;
+  float windSpeedSlow6 = 107.0f;
+  float windSpeedMed5 = 117.0f;
+  float windSizeFastTiny = 123.0f;
+  float windSpeedSlow7 = 126.0f;
+  float windScaleHuge2 = 133.0f;
+  float windSpeedMed6 = 142.0f;
+  float windScaleReturn = 146.0f;
+  float windSpeedSlow8 = 150.0f;
+  float windSpeedFast5 = 164.0f;
+  float windSpeedSuperSlow2 = 175.0f;
+  float windScaleFadeStart = 181.0f;
+  float windSpeedMedSlow = 183.0f;
+  float windFinalSlowdown = 199.0f;
 
   //// SCENE 2 END DECLARATIONS ////
 
@@ -129,14 +162,20 @@ public:
 
     // SCENE 2 CREATE /////
 
-    parameterServer() << sceneTime << running;
-    parameterServer() << blobSeperationThresh << scene2Boundary;
-    parameterServer() << currentSpeedScene2 << targetSpeedScene2
-                      << interpRateScene2;
+    parameterServer() << sceneTime;
+    parameterServer() << running;
+    parameterServer() << blobSeperationThresh;
+    // parameterServer() << scene2Boundary;
+    parameterServer() << currentSpeedScene2;
+    parameterServer() << targetSpeedScene2;
+    parameterServer() << interpRateScene2;
     parameterServer() << inSphereScene2;
-    // if (isPrimary()) {
-    addSphere(blobMesh, blobSizeScene2, 40, 40);
-    blobMesh.primitive(al::Mesh::TRIANGLES);
+    // parameterServer() << blobSizeScene2;
+    //  if (isPrimary()) {
+    addSphere(blobMesh, 1.8, 40, 40);
+    blobMesh.primitive(
+        al::Mesh::LINE_STRIP_ADJACENCY); // test if i like lines of triangles
+                                         // more in the sphere
     blobMesh.generateNormals();
     creature.addStarfish(starCreatureMesh);
     starCreatureMesh.update();
@@ -166,6 +205,7 @@ public:
     blobsEffectChain.pushBack(&blobsRippleX);
     starRipple.setParams(1.0, 1.0, 1.0, 'z');
     starEffectChain.pushBack(&starRipple);
+    blobMesh.update();
     // scene2Boundary = 1.0;
     // }
 
@@ -179,40 +219,125 @@ public:
       if (isPrimary()) {
         globalTime += dt;
         // localTime += dt;
-        sceneTime = sceneTime + dt;
+        localTime += dt;
+        // sceneTime = localTime; // seems to be an alright fix
 
-        sequencer().update(globalTime);
+        // sequencer().update(globalTime);
 
         std::cout << "global time: " << globalTime << std::endl;
         fflush(stdout);
       }
+      sceneTime = localTime;
+      // }
 
       // Set speed transitions via targetSpeedScene2
 
       if (sceneIndex == 2) {
-        if (sceneTime < 1.0) {
-          scene2Boundary = 30.0;
-          targetSpeedScene2 = 5.0;
-        } else if (sceneTime < 5.0) {
 
-          targetSpeedScene2 = 0.1;
-        } else if (sceneTime < 8.0) {
-          targetSpeedScene2 = 0.2;
-        } else if (sceneTime < 11.0) {
-          targetSpeedScene2 = 0.05;
-        } else if (sceneTime >= 20.0) {
-          targetSpeedScene2 = 2.0;
-          // scene2Boundary = 5.0;
-        }
+        if (isPrimary()) {
 
-        // Smooth the speed
-        currentSpeedScene2 =
-            currentSpeedScene2 +
-            (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
+          if (sceneTime < windSpeedSlow1) {
+            targetSpeedScene2 = 3.0f;
+            scene2Boundary = 10.0f; // Initial fast with wide boundary
+          } else if (sceneTime >= windSpeedSlow1 &&
+                     sceneTime < windSpeedSuperSlow) {
+            targetSpeedScene2 = 0.5f; // 3s
+          } else if (sceneTime >= windSpeedSuperSlow &&
+                     sceneTime < windSpeedMedFast1) {
+            targetSpeedScene2 = 0.2f; // 3.5s
+          } else if (sceneTime >= windSpeedMedFast1 &&
+                     sceneTime < windSpeedSlow2) {
+            targetSpeedScene2 = 2.5f; // 11s
+          } else if (sceneTime >= windSpeedSlow2 &&
+                     sceneTime < windScaleLarge1) {
+            targetSpeedScene2 = 0.7f; // 23s
+          } else if (sceneTime >= windScaleLarge1 &&
+                     sceneTime < windSpeedMed2) {
+            blobSizeScene2 = 3.5f; // 31s
+          } else if (sceneTime >= windSpeedMed2 && sceneTime < windSpeedFast2) {
+            targetSpeedScene2 = 2.0f; // 34s
+          } else if (sceneTime >= windSpeedFast2 && sceneTime < windSpeedMed3) {
+            targetSpeedScene2 = 4.0f; // 39s
+          } else if (sceneTime >= windSpeedMed3 && sceneTime < windSpeedSlow4) {
+            blobSizeScene2 = 0.6f;
+            targetSpeedScene2 = 1.2f; // 44s
+          } else if (sceneTime >= windSpeedSlow4 &&
+                     sceneTime < windScaleHuge1) {
+            targetSpeedScene2 = 0.7f; // 49s
+          } else if (sceneTime >= windScaleHuge1 && sceneTime < windSpeedMed4) {
+            blobSizeScene2 = 3.5f; // 49s, small
+          } else if (sceneTime >= windSpeedMed4 &&
+                     sceneTime < windSpeedSlower5) {
+            targetSpeedScene2 = 2.0f;
+            blobSizeScene2 = 3.2f; // 1:07
+          } else if (sceneTime >= windSpeedSlower5 &&
+                     sceneTime < windScaleDownStart) {
+            targetSpeedScene2 = 0.7f; // 1:17
+          } else if (sceneTime >= windScaleDownStart &&
+                     sceneTime < windSpeedFast3) {
+            blobSizeScene2 = 1.5f; // 1:33 start scale down
+          } else if (sceneTime >= windSpeedFast3 &&
+                     sceneTime < windSpeedSlow5) {
+            targetSpeedScene2 = 3.5f;
+            blobSizeScene2 = 0.9f; // 1:36 fast + small
+          } else if (sceneTime >= windSpeedSlow5 &&
+                     sceneTime < windSpeedFast4) {
+            targetSpeedScene2 = 0.4f; // 1:39 slow
+          } else if (sceneTime >= windSpeedFast4 && sceneTime < windSpeedMed5) {
+            targetSpeedScene2 = 3.0f; // 1:41 speed up
+          } else if (sceneTime >= windSpeedMed5 &&
+                     sceneTime < windSizeFastTiny) {
+            targetSpeedScene2 = 0.6f; // 1:44 slow
+          } else if (sceneTime >= windSizeFastTiny &&
+                     sceneTime < windSpeedSlow7) {
+            targetSpeedScene2 = 4.0f;
+            blobSizeScene2 = 0.6f; // 2:03 tiny + fast
+          } else if (sceneTime >= windSpeedSlow7 &&
+                     sceneTime < windScaleHuge2) {
+            targetSpeedScene2 = 0.5f; // 2:06
+          } else if (sceneTime >= windScaleHuge2 && sceneTime < windSpeedMed6) {
+            blobSizeScene2 = 4.0f; // 2:13 huge
+          } else if (sceneTime >= windSpeedMed6 &&
+                     sceneTime < windScaleReturn) {
+            targetSpeedScene2 = 2.2f; // 2:22
+          } else if (sceneTime >= windScaleReturn &&
+                     sceneTime < windSpeedSlow8) {
+            blobSizeScene2 = 1.8f; // 2:26 return to original size
+          } else if (sceneTime >= windSpeedSlow8 &&
+                     sceneTime < windSpeedFast5) {
+            targetSpeedScene2 = 0.3f; // 2:30
+          } else if (sceneTime >= windSpeedFast5 &&
+                     sceneTime < windSpeedSuperSlow2) {
+            targetSpeedScene2 = 4.0f; // 2:44
+          } else if (sceneTime >= windSpeedSuperSlow2 &&
+                     sceneTime < windScaleFadeStart) {
+            targetSpeedScene2 = 0.2f; // 2:55
+          } else if (sceneTime >= windScaleFadeStart &&
+                     sceneTime < windSpeedMedSlow) {
+            blobSizeScene2 =
+                blobSizeScene2 * 0.995f; // 3:01 start gradual shrink
+            if (blobSizeScene2 < 0.05f)
+              blobSizeScene2 = 0.0f;
+            scene2Boundary = 2.0f; // constrain to keep them nearby
+          } else if (sceneTime >= windSpeedMedSlow &&
+                     sceneTime < windFinalSlowdown) {
+            targetSpeedScene2 = 0.5f; // 3:03
+          } else if (sceneTime >= windFinalSlowdown) {
+            targetSpeedScene2 = 0.001f;
+            blobSizeScene2 = 0.001f;
+            scene2Boundary = 60.0f; // let them drift (final fade)
+            // blobsEffectChain.clear(); // optional stop effects
+          }
 
-        // Expand boundary once early
-        if (sceneTime >= 0.2) {
-          scene2Boundary = 4.0;
+          // Smooth the speed
+          currentSpeedScene2 =
+              currentSpeedScene2 +
+              (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
+
+          // Expand boundary once early
+          if (sceneTime >= 0.2) {
+            scene2Boundary = 4.0;
+          }
         }
 
         // Animate all blobs
@@ -222,7 +347,7 @@ public:
 
             if (pos.mag() >= scene2Boundary) {
               blobs[i].faceToward(al::Vec3f(0),
-                                  0.005); // slow turn rate to avoid jitter
+                                  0.01); // slow turn rate to avoid jitter
               blobs[i].moveF(blobSizeScene2);
             }
             // for setting state for renderers
@@ -236,6 +361,15 @@ public:
             state().blobQuatY[i] = blobs[i].quat().y;
             state().blobQuatZ[i] = blobs[i].quat().z;
           }
+          blobsEffectChain.process(blobMesh, sceneTime);
+          blobMesh.generateNormals();
+          blobMesh.update();
+
+          starEffectChain.process(starCreatureMesh, sceneTime);
+          starCreatureMesh.generateNormals();
+          starCreatureMesh.update();
+
+          // THIS PROCESSING MIGHT NEED TO UPDATE OUTSIDE PRIMARY AS WELL?
         }
         if (!isPrimary()) {
           // updating pos and turning state
@@ -247,7 +381,6 @@ public:
 
             blobs[i].quat().set(state().blobQuatW[i], state().blobQuatX[i],
                                 state().blobQuatY[i], state().blobQuatZ[i]);
-            // more accurate but less efficient
 
             // blobs[i]
             //     .quat()
@@ -255,17 +388,10 @@ public:
             //     blobs[i].pos().z, 1.0f) .normalize(); // more efficient but
             //     less interesting
             // turning weird? come here
+            blobMesh.update();
+            starCreatureMesh.update();
           }
         }
-
-        // Apply mesh effects + regenerate normals
-        blobsEffectChain.process(blobMesh, sceneTime);
-        blobMesh.generateNormals();
-        blobMesh.update();
-
-        starEffectChain.process(starCreatureMesh, sceneTime);
-        starCreatureMesh.generateNormals();
-        starCreatureMesh.update();
       }
     }
   }
@@ -279,21 +405,21 @@ public:
 
       // SCENE 2 DRAW ////
 
+      g.light(light);
+
       g.blendTrans();
       g.depthTesting(true);
       g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334 - 118)) * 0.8));
 
-      g.lighting(true);
+      g.lighting(true); // flashing / flickering -- comment this out if needed
       // lighting from karl's example
       light.globalAmbient(al::RGB(0.5, (1.0), 1.0));
       light.ambient(al::RGB(0.5, (1.0), 1.0));
       light.diffuse(al::RGB(1, 1, 0.5));
-      g.light(light);
-      material.specular(light.diffuse() * 0.3);
+
+      material.specular(light.diffuse());
       material.shininess(50);
       g.material(material);
-
-      g.pointSize(pointSize);
 
       for (int i = 0; i < blobs.size(); ++i) {
         al::Vec3f newColor = colorPallete[i % 3];
@@ -301,13 +427,14 @@ public:
         g.pushMatrix();
         g.translate(blobs[i].pos());
         g.rotate(blobs[i].quat());
+        g.scale(1.5);
         if (i % 2 == 1) {
           g.color(newColor.x, newColor.y, newColor.z,
-                  0.4 + (sin(sceneTime * 2.0) * 0.1));
+                  0.3 + (sin(sceneTime * 2.0) * 0.1));
           g.draw(blobMesh);
         } else {
           g.color(newColor.x + 0.4, newColor.y + 0.4, newColor.z + 0.4,
-                  0.4 + (sin(sceneTime * 0.5) * 0.1));
+                  0.4 + (sin(sceneTime * 0.6) * 0.1));
           g.draw(starCreatureMesh);
         }
         g.popMatrix();

@@ -166,7 +166,7 @@ public:
       globalTime += dt;
       localTime += dt;
     }
-    sceneTime = localTime;
+    sceneTime = localTime; // parameter - getting sent to everyone
 
     // sequencer().update(globalTime);
     std::cout << "global time: " << globalTime << std::endl;
