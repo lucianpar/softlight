@@ -91,7 +91,7 @@ public:
     } else {
       std::cout << "couldnt find ver scene 4 in path" << std::endl;
     }
-    al::FilePath fragPath4 = searchPaths.find("FoamMain.frag");
+    al::FilePath fragPath4 = searchPaths.find("SpruceExplode4.frag");
     if (fragPath4.valid()) {
       fragPathScene4 = fragPath4.filepath();
       std::cout << "Found file at: " << fragPathScene4 << std::endl;
@@ -130,6 +130,7 @@ public:
 
       globalTime += dt;
       sceneTime = sceneTime + dt;
+      std::cout << globalTime << std::endl;
     }
   }
 
