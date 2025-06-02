@@ -56,7 +56,7 @@ public:
   al::Light light;
   // Light light;
   al::Material material;
-  ShadedSphere shadedSphere;
+  ShadedSphere shadedSphereScene4;
 
   al::Parameter sceneTime{"sceneTime", "", 0.0, 0.0, 300.0};
 
@@ -117,11 +117,11 @@ public:
 
     // scene 4
 
-    if (sceneIndex == 4) {
-      shadedSphere.setSphere(15.0, 20);
-      shadedSphere.setShaders(vertPathScene4, fragPathScene4);
-      shadedSphere.update();
-    }
+    // if (sceneIndex == 4) {
+    shadedSphereScene4.setSphere(15.0, 20);
+    shadedSphereScene4.setShaders(vertPathScene4, fragPathScene4);
+    shadedSphereScene4.update();
+    // }
   }
 
   void onAnimate(double dt) override {
@@ -138,10 +138,10 @@ public:
     // scene 4
     g.clear(0.0);
 
-    g.shader(shadedSphere.shader());
-    shadedSphere.setUniformFloat("u_time", sceneTime);
+    g.shader(shadedSphereScene4.shader());
+    shadedSphereScene4.setUniformFloat("u_time", sceneTime);
 
-    shadedSphere.draw(g);
+    shadedSphereScene4.draw(g);
   }
 
   // scene 4

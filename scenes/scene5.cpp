@@ -39,15 +39,6 @@
 #include "../utility/imageColorToMesh.hpp"
 #include "softlight-sphere-new/softlight/softlight/eoys-shader/shaderToSphere.hpp"
 
-/*
-* sequence
-* work on removing oldest mesh vertices
-*update world color to flow into next scene
-* add more mirrors
-*figure out spacings
-
-*/
-
 struct Common {};
 class MyApp : public al::DistributedAppWithState<Common> {
 public:
@@ -55,7 +46,7 @@ public:
   al::SearchPaths searchPaths;
   al::Light light;
   al::Material material;
-  ShadedSphere shadedSphere;
+  ShadedSphere shadedSphereScene5;
 
   // scene 5
 
@@ -74,6 +65,7 @@ public:
     gam::sampleRate(audioIO().framesPerSecond());
 
     searchPaths.addSearchPath(al::File::currentPath() + "/../../../..");
+    parameterServer() << sceneTime;
 
     // scene 5
 
@@ -95,13 +87,11 @@ public:
 
   void onCreate() override {
     // should be boilerplate
-    shadedSphere.setSphere(15.0, 20);
+    shadedSphereScene5.setSphere(15.0, 20);
+    shadedSphereScene5.setShaders(vertPathScene5, fragPathScene5);
+    shadedSphereScene5.update();
 
     // scene 5 and 4
-    if (sceneIndex == 5) {
-
-      shadedSphere.update();
-    }
   }
 
   void onAnimate(double dt) override {
@@ -113,15 +103,14 @@ public:
   void onDraw(al::Graphics &g) override {
 
     // scene 5 DRAW
-    g.clear(0.0);
-    if (shaderInitFlag) {
-      // Just like ShaderEngine does:
-      shadedSphere.setShaders(vertPathScene5, fragPathScene5);
-      shaderInitFlag = false;
+    if (sceneIndex == 5) {
+
+      g.clear(0.0);
+
+      g.shader(shadedSphereScene5.shader());
+      shadedSphereScene5.setUniformFloat("u_time", sceneTime);
+      shadedSphereScene5.draw(g);
     }
-    g.shader(shadedSphere.shader());
-    shadedSphere.setUniformFloat("u_time", sceneTime);
-    shadedSphere.draw(g);
     // scene end 5 DRAW
   }
 
