@@ -164,58 +164,14 @@ public:
   void onAnimate(double dt) override {
     if (isPrimary()) {
       globalTime += dt;
-      sceneTime += dt;
-      // localTime += dt;
+      localTime += dt;
     }
-    // sceneTime = localTime; // parameter - getting sent to everyone
+    sceneTime = localTime; // parameter - getting sent to everyone
 
     // sequencer().update(globalTime);
     std::cout << "global time: " << globalTime << std::endl;
     fflush(stdout);
-
-    // ANIMATE SCENE 6
     if (isPrimary()) {
-
-      if (sceneTime < 10) {
-        scene6pulseAmount = 0.1f * 0.5f;
-        jelliesSpeedScene2 = 0.4f;
-      } else if (sceneTime < 60) {
-        scene6pulseAmount = 0.1f;
-        jelliesSpeedScene2 = 1.0f;
-      } else if (sceneTime < 64) {
-        scene6pulseAmount = 0.35f;
-      } else if (sceneTime < 86) {
-        scene6pulseAmount = 0.4f;
-        jelliesSpeedScene2 = 1.5f;
-      } else if (sceneTime < 94) {
-        scene6pulseAmount = 0.2f;
-        jelliesSpeedScene2 = 2.0f;
-      } else if (sceneTime < 108) {
-        jelliesSpeedScene2 = 0.6f;
-      } else if (sceneTime < 135) {
-        jelliesSpeedScene2 = 1.0f;
-      } else if (sceneTime < 215) {
-        jelliesSpeedScene2 = 1.3f;
-      } else if (sceneTime < 265) {
-        scene2Boundary = 6.0f;
-        jelliesSpeedScene2 = 1.5f;
-      } else if (sceneTime < 300) {
-        scene2Boundary = 50.0f;
-        jelliesSpeedScene2 = 1.2f;
-        scene6pulseAmount = 0.7f;
-      } else if (sceneTime < 345) {
-        jelliesSpeedScene2 = 1.5f;
-        scene6pulseAmount = 0.7f;
-      } else if (sceneTime < 460) {
-        scene6pulseAmount = 0.15f;
-        jelliesSpeedScene2 = 1.8f;
-      } else {
-        scene6pulseAmount = 0.0f;
-        jelliesSpeedScene2 = 1.5f;
-        scene2Boundary = 50.0f + (sceneTime - 470) * 0.5f;
-        state().flicker = 0.25f - (sceneTime - 470) * 0.0025f;
-      }
-
       for (int i = 0; i < jellies.size(); ++i) {
         float t = globalTime + i * 10.0f;
         float wobbleAmount = 0.01f * std::sin(t * 0.7f);

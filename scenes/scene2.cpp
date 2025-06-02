@@ -50,9 +50,9 @@
 int sceneIndex = 2;
 struct Common {
 
-  double sceneTime;
-  int sceneIndex;
-  bool running;
+  // double sceneTime;
+  //  int sceneIndex;
+  //  bool running;
 
   // scene 2
   float blobPosX[nAgentsScene2];
