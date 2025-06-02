@@ -69,19 +69,19 @@ class MyApp : public al::DistributedAppWithState<Common> {
   // al::Parameter pTime{"time", "", 0.0, 0.0, 10000}; 0ld stuff
   // al::ParameterInt pIndex{"index", "", 0, 0, 100};
 
-  al::ParameterBool runningParam{"runningParam", "0", false};
-  al::Parameter sceneTimeParam{"sceneTimeParam", "0", 0.0, 0.0, 10000};
-  al::Parameter sceneIndexParam{"sceneIndexParam", "0", 1, 0, 6};
-  // al::Parameter sceneIndex{"sceneTime", "0", 0.0, 0.0, 10000};
+  al::ParameterBool running{"running", "0", false};
+  al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 10000};
+  // al::Parameter sceneIndexParam{"sceneIndexParam", "0", 1, 0, 6};
+  al::ParameterInt sceneIndex{"sceneIndex", "0", 0, 0, 10};
 
   //
 public:
   // Global Time
-  int sceneIndex = 0;
+  // int sceneIndex = 0;
   // int previousIndex = 0;
   double globalTime = 0;
-  double sceneTime;
-  bool running = false;
+  // double sceneTime;
+  // bool running = false;
   float localTime;
   // float sceneIndex = 0;
   // double sceneTime = 64;
@@ -110,10 +110,63 @@ public:
 
   // SCENE DECLERATIONS
 
+  // SCENE 1 DECLARE START
+
+  float rippleAmplitudeScene1 = 0.0;
+  float rippleSpeedXScene1 = 0.2;
+  float rippleSpeedYScene1 = 0.2;
+  float rippleSpeedZScene1 = 0.3;
+  float attractorSpeedScene1;
+  float startingBodyAlpha = 0.00001;
+  float bodyAlphaIncScene1 = 0.0;
+  float pointSize = 5.0f; // Particle size
+  float shellIncrementScene1;
+  float particleIncrementScene1;
+
+  // SCENE 1 sequencing
+
+  float shellTurnsWhiteEvent = 15.0f;
+
+  float particlesAppearEvent = 15.0f;
+
+  float particlesSlowRippleEvent = 10.0f;
+
+  float rippleSpeedUpEvent = 30.0f;
+
+  float stopSpeedUpEvent = 62.0f;
+
+  float startTurnShellBlack = 62.0f;
+
+  float stopTurnShellBlack = 64.0f;
+
+  float bodyCloudAppear = 65.0f;
+
+  float bodyCloudMoveOut = 70.0f;
+
+  // float startAttractor = 70.0f;
+
+  float moveInEvent = 75.0;
+
+  // scene 1 Meshes and Effects
+  al::VAOMesh attractorMesh;
+  al::VAOMesh bodyMesh;
+  objParser newObjParser;
+  Attractor mainAttractor;
+  VertexEffectChain mainEffectChain;
+  RippleEffect mainRippleY;
+  RippleEffect mainRippleX;
+  RippleEffect mainRippleZ;
+
+  VertexEffectChain bodyEffectChain;
+  ;
+  ScatterEffect bodyScatter;
+
+  // SCENE 1 DECLARE END
+
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
 
-    parameterServer() << runningParam << sceneTimeParam << sceneIndexParam;
+    parameterServer() << running << sceneTime << sceneIndex;
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
@@ -277,6 +330,8 @@ public:
     //  std::string path =
     //  localAssetPath("../softlight-sphere-new/audio/Song2.wav");
 
+    // SCENE 1
+    createScene1();
     // scene 3
     shadedSphereScene3.setSphere(15.0, 20);
     shadedSphereScene3.setShaders(vertPathScene3, fragPathScene3);
@@ -395,19 +450,13 @@ public:
         sequencer6().playSequence();
         return true;
       }
-      sceneIndexParam.set(sceneIndex);
+      // sceneIndexParam.set(sceneIndex);
       return false;
     }
-    sceneIndex = sceneIndexParam;
+    // sceneIndex = sceneIndexParam;
   }
 
   void onAnimate(double dt) override {
-
-    if (isPrimary()) {
-      runningParam.set(running);
-    } else {
-      running = runningParam.get();
-    }
 
     // boiler plate for every scene / main template
     // if (!isPrimary()) {
@@ -424,20 +473,12 @@ public:
 
     if (running == true) {
 
-      globalTime += dt;
-      // time : " << globalTime << std::endl;
-      // localTime += dt;
-      sceneTime = sceneTime + dt;
-      std::cout << globalTime << std::endl; // comment out later
-
       if (isPrimary()) {
-        // globalTime += dt;
+        globalTime += dt;
         // // time : " << globalTime << std::endl;
-        // // localTime += dt;
-        // sceneTime = sceneTime + dt;
+        sceneTime = sceneTime + dt;
         if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
           sceneIndex = 1;
-          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
           sequencer1().playSequence();
           std::cout << "started scene 1" << std::endl;
@@ -467,26 +508,29 @@ public:
           sequencer6().playSequence();
           std::cout << "started scene 6" << std::endl;
         }
-
-        // state().sceneIndex = sceneIndex;
-        // state().sceneTime = sceneTime;
-        // pTime.set(sceneTime);
-        // pIndex.set(sceneIndex);
       } else {
         // sceneTime = localTime;
       }
       shadedSphereScene3.update();
       shadedSphereScene4.update();
       shadedSphereScene5.update();
+
+      // scene 1
+      animateScene1(dt);
     }
   }
 
   void onDraw(al::Graphics &g) override {
     // end of boilerplate
 
-    // SCENE 1 DRAW /////
     if (running == true) {
+
+      // SCENE 1 DRAW /////
+      if (sceneIndex == 1) {
+        drawScene1(g);
+      }
       if (sceneIndex == 3) {
+        // if (globalTime > 0) {
         g.clear(0.0);
 
         g.shader(shadedSphereScene3.shader());
@@ -513,7 +557,149 @@ public:
         shadedSphereScene5.draw(g);
       }
     }
-  };
+  }
+
+  void createScene1() {
+    newObjParser.parse(objPath, bodyMesh);
+    bodyMesh.translate(0, 3.5, -4);
+    for (int i = 0; i < bodyMesh.vertices().size(); ++i) {
+      bodyMesh.color(
+          1.0, 0.6, 0.3,
+          startingBodyAlpha); // Orange particles with alpha transparency
+      bodyMesh.texCoord(1.0f, 0.0f);
+    }
+    bodyMesh.update();
+    bodyMesh.primitive(al::Mesh::POINTS);
+    bodyMesh.update();
+
+    // Initialize attractor
+    al::addSphere(attractorMesh, 10.0f, 100, 100);
+    attractorMesh.primitive(al::Mesh::LINES); // switch back to lines
+    for (int i = 0; i < attractorMesh.vertices().size(); ++i) {
+      attractorMesh.color(1.0, 0.6, 0.2, 0.9);
+    }
+    std::cout << "made attractor sphere with vertices # : "
+              << attractorMesh.vertices().size() << std::endl;
+
+    // SET EFFEFCTS
+    bodyScatter.setBaseMesh(bodyMesh.vertices());
+    bodyScatter.setParams(0.5, 20.0);
+    bodyScatter.setScatterVector(bodyMesh);
+    mainRippleX.setParams(4, 0.2, 4.0, 'y');
+    mainRippleX.setParams(4, 0.2, 6.0, 'x');
+    mainRippleX.setParams(4, 0.2, 5.0, 'z');
+
+    mainEffectChain.pushBack(&mainRippleX);
+    mainEffectChain.pushBack(&mainRippleY);
+    mainEffectChain.pushBack(&mainRippleZ);
+
+    bodyEffectChain.pushBack(&bodyScatter);
+
+    bodyScatter.triggerOut(true, bodyMesh);
+
+    bodyMesh.update();
+
+    attractorMesh.update();
+  }
+
+  void animateScene1(double dt) {
+
+    if (sceneTime < particlesSlowRippleEvent) {
+      mainAttractor.processThomas(attractorMesh, sceneTime, 0);
+    }
+
+    if (sceneTime >= particlesSlowRippleEvent &&
+        sceneTime <= rippleSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00005;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 5 * 0.00005, -5 * 0.00005);
+    }
+
+    if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00015;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 5 * 0.0001, -5 * 0.0001);
+    }
+    if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
+      attractorSpeedScene1 = 0.00001;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 0, -15 * 0.0002);
+    }
+
+    if (sceneTime >= stopSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00005;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      // attractorMesh.translate(
+
+      //     0, 0, -10 * 0.0002);
+      // mainEffectChain.process(attractorMesh, sceneTime); //ripple
+      // commented out
+    }
+
+    attractorMesh.update();
+    // body mesh effects
+    if (sceneTime >= bodyCloudAppear) {
+      if (bodyAlphaIncScene1 < 1.0) {
+        bodyAlphaIncScene1 += 0.0000000000000001;
+      }
+    }
+    if (sceneTime >= moveInEvent) {
+      attractorSpeedScene1 = 0.0000001;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      bodyScatter.setParams(3.5, 20.0);
+      bodyScatter.triggerIn(true);
+
+      attractorMesh.translate(
+
+          -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
+      attractorMesh.scale(0.995);
+    }
+
+    bodyEffectChain.process(bodyMesh, sceneTime);
+    bodyMesh.update();
+
+    // SCENE 1 ANIMATE END
+  }
+  void drawScene1(al::Graphics &g) {
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    if (sceneTime < shellTurnsWhiteEvent) {
+      shellIncrementScene1 = ((sceneTime) / (shellTurnsWhiteEvent));
+      g.clear(1.0 - shellIncrementScene1);
+    }
+    if (sceneTime >= shellTurnsWhiteEvent) {
+      g.clear(0.0);
+    }
+    g.depthTesting(true);
+    g.blending(true);
+    g.blendAdd();
+
+    g.pointSize(pointSize);
+    g.meshColor();
+    g.draw(attractorMesh);
+
+    if (sceneTime >= bodyCloudAppear) {
+      g.shader(pointShader);
+      pointShader.uniform("pointSize", 0.01);
+      pointShader.uniform("inputColor",
+                          al::Vec4f(1.0, 0.6, 0.3, bodyAlphaIncScene1));
+      g.draw(bodyMesh);
+      g.shader();
+    }
+    // } else {
+    //   g.clear(0.0);
+  }
 
   void onSound(al::AudioIOData &io) override {
     if (isPrimary()) {

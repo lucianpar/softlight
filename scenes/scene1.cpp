@@ -252,6 +252,49 @@ public:
     }
   }
 
+  void createScene1() {
+    newObjParser.parse(objPath, bodyMesh);
+    bodyMesh.translate(0, 3.5, -4);
+    for (int i = 0; i < bodyMesh.vertices().size(); ++i) {
+      bodyMesh.color(
+          1.0, 0.6, 0.3,
+          startingBodyAlpha); // Orange particles with alpha transparency
+      bodyMesh.texCoord(1.0f, 0.0f);
+    }
+    bodyMesh.update();
+    bodyMesh.primitive(al::Mesh::POINTS);
+    bodyMesh.update();
+
+    // Initialize attractor
+    al::addSphere(attractorMesh, 10.0f, 100, 100);
+    attractorMesh.primitive(al::Mesh::LINES); // switch back to lines
+    for (int i = 0; i < attractorMesh.vertices().size(); ++i) {
+      attractorMesh.color(1.0, 0.6, 0.2, 0.9);
+    }
+    std::cout << "made attractor sphere with vertices # : "
+              << attractorMesh.vertices().size() << std::endl;
+
+    // SET EFFEFCTS
+    bodyScatter.setBaseMesh(bodyMesh.vertices());
+    bodyScatter.setParams(0.5, 20.0);
+    bodyScatter.setScatterVector(bodyMesh);
+    mainRippleX.setParams(4, 0.2, 4.0, 'y');
+    mainRippleX.setParams(4, 0.2, 6.0, 'x');
+    mainRippleX.setParams(4, 0.2, 5.0, 'z');
+
+    mainEffectChain.pushBack(&mainRippleX);
+    mainEffectChain.pushBack(&mainRippleY);
+    mainEffectChain.pushBack(&mainRippleZ);
+
+    bodyEffectChain.pushBack(&bodyScatter);
+
+    bodyScatter.triggerOut(true, bodyMesh);
+
+    bodyMesh.update();
+
+    attractorMesh.update();
+  }
+
   void onCreate() override {
     pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
                         slurp(pointGeomPath));
@@ -415,6 +458,76 @@ public:
     }
   }
 
+  void animateScene1(double dt) {
+
+    if (sceneTime < particlesSlowRippleEvent) {
+      mainAttractor.processThomas(attractorMesh, sceneTime, 0);
+    }
+
+    if (sceneTime >= particlesSlowRippleEvent &&
+        sceneTime <= rippleSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00005;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 5 * 0.00005, -5 * 0.00005);
+    }
+
+    if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00015;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 5 * 0.0001, -5 * 0.0001);
+    }
+    if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
+      attractorSpeedScene1 = 0.00001;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      attractorMesh.translate(
+
+          0, 0, -15 * 0.0002);
+    }
+
+    if (sceneTime >= stopSpeedUpEvent) {
+      attractorSpeedScene1 = 0.00005;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      // attractorMesh.translate(
+
+      //     0, 0, -10 * 0.0002);
+      // mainEffectChain.process(attractorMesh, sceneTime); //ripple
+      // commented out
+    }
+
+    attractorMesh.update();
+    // body mesh effects
+    if (sceneTime >= bodyCloudAppear) {
+      if (bodyAlphaIncScene1 < 1.0) {
+        bodyAlphaIncScene1 += 0.0000000000000001;
+      }
+    }
+    if (sceneTime >= moveInEvent) {
+      attractorSpeedScene1 = 0.0000001;
+      mainAttractor.processThomas(attractorMesh, sceneTime,
+                                  attractorSpeedScene1);
+      bodyScatter.setParams(5.0, 20.0);
+      bodyScatter.triggerIn(true);
+
+      attractorMesh.translate(
+
+          -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
+      attractorMesh.scale(0.995);
+    }
+
+    bodyEffectChain.process(bodyMesh, sceneTime);
+    bodyMesh.update();
+
+    // SCENE 1 ANIMATE END
+  }
+
   // }
   void onAnimate(double dt) override {
     // boiler plate for every scene / main template
@@ -558,6 +671,36 @@ public:
 
       // SCENE 1 ANIMATE END
     }
+  }
+
+  void drawScene1(al::Graphics &g) {
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    if (sceneTime < shellTurnsWhiteEvent) {
+      shellIncrementScene1 = ((sceneTime) / (shellTurnsWhiteEvent));
+      g.clear(1.0 - shellIncrementScene1);
+    }
+    if (sceneTime >= shellTurnsWhiteEvent) {
+      g.clear(0.0);
+    }
+    g.depthTesting(true);
+    g.blending(true);
+    g.blendAdd();
+
+    g.pointSize(pointSize);
+    g.meshColor();
+    g.draw(attractorMesh);
+
+    if (sceneTime >= bodyCloudAppear) {
+      g.shader(pointShader);
+      pointShader.uniform("pointSize", 0.01);
+      pointShader.uniform("inputColor",
+                          al::Vec4f(1.0, 0.6, 0.3, bodyAlphaIncScene1));
+      g.draw(bodyMesh);
+      g.shader();
+    }
+    // } else {
+    //   g.clear(0.0);
   }
 
   void onDraw(al::Graphics &g) override {
