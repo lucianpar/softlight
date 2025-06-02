@@ -162,6 +162,9 @@ public:
 
     // SCENE 2 CREATE /////
 
+    // navControl().disable(); // camera or nav movement -- comment out . this
+    // is
+    //  to deal with z fighting issues in scene 2.
     parameterServer() << sceneTime;
     parameterServer() << running;
     parameterServer() << blobSeperationThresh;
@@ -405,11 +408,11 @@ public:
 
       // SCENE 2 DRAW ////
 
+      g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334.0 - 118.0)) * 0.8));
       g.light(light);
 
       g.blendTrans();
       g.depthTesting(true);
-      g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334 - 118)) * 0.8));
 
       g.lighting(true); // flashing / flickering -- comment this out if needed
       // lighting from karl's example
