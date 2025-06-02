@@ -188,3 +188,257 @@ public:
       }
     }
   }
+
+  void onCreate() override {
+
+    pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
+                        slurp(pointGeomPath));
+
+    // cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
+    // if (!cuttleboneDomain) {
+    //   std::cerr << "ERRor: Cuttlebone not started" << std::endl;
+    // }
+
+    nav().pos(al::Vec3d(0, 0, 0));
+    // sequencer().playSequence();
+
+    // if (sceneIndex == 1) {
+    //  std::string path =
+    //  localAssetPath("../softlight-sphere-new/audio/Song2.wav");
+
+    if (isPrimary()) {
+      sequencer1().add<SoundObject>(0, 44000).set(
+
+          Song1Path.c_str());
+      sequencer2().add<SoundObject>(0, 44000).set(
+
+          Song2Path.c_str());
+      sequencer3().add<SoundObject>(0, 44000).set(
+
+          Song3Path.c_str());
+      sequencer4().add<SoundObject>(0, 44000).set(
+
+          Song4Path.c_str());
+      sequencer5().add<SoundObject>(0, 44000).set(
+
+          Song5Path.c_str());
+      sequencer6().add<SoundObject>(0, 44000).set(
+
+          Song6Path.c_str());
+    }
+  }
+
+  bool onKeyDown(const al::Keyboard &k) override {
+
+    if (isPrimary()) {
+
+      if (k.key() == ' ' && running == false) {
+        running = true;
+        std::cout << "started running" << std::endl;
+      } else if (k.key() == ' ' && running == true) {
+        running = false;
+        std::cout << "stopped running" << std::endl;
+      } else {
+        //   sceneTime = 0;
+        //   std::cout << "reset scene time to 0" << std::endl;
+      }
+      if (k.key() == '1') {
+        sceneIndex = 1;
+        globalTime = 0.0;
+        sceneTime = 0.0;
+        running = true;
+        std::cout << "scene index: " << 1 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer1().playSequence();
+
+        return true;
+      }
+      if (k.key() == '2') {
+        sceneIndex = 2;
+        globalTime = 119.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 2 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer2().playSequence();
+
+        return true;
+      }
+      if (k.key() == '3') {
+        sceneIndex = 3;
+        globalTime = 335.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 3 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer3().playSequence();
+        return true;
+      }
+      if (k.key() == '4') {
+        sceneIndex = 4;
+        globalTime = 444.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 4 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer4().playSequence();
+        return true;
+      }
+      if (k.key() == '5') {
+        sceneIndex = 5;
+        globalTime = 936.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 5 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer5().playSequence();
+        return true;
+      }
+      if (k.key() == '6') {
+        sceneIndex = 6;
+        globalTime = 1105.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 6 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer6().playSequence();
+        return true;
+      }
+      return false;
+    }
+  }
+
+  void onAnimate(double dt) override {
+    // boiler plate for every scene / main template
+    // if (!isPrimary()) {
+    // //   running = state().running;
+    // //   running = pRunning.get();
+    // // } else {
+    // //   state().running = running;
+    // //   pRunning.set(running);
+    // // }
+
+    // std::cout << "running : " << state().running << std::endl;
+    // std::cout << "index : " << state().sceneIndex << std::endl;
+    // std::cout << "time : " << state().sceneTime << std::endl;
+
+    if (running == true) {
+
+      globalTime += dt;
+      // time : " << globalTime << std::endl;
+      // localTime += dt;
+      sceneTime = sceneTime + dt;
+
+      if (isPrimary()) {
+        // globalTime += dt;
+        // // time : " << globalTime << std::endl;
+        // // localTime += dt;
+        // sceneTime = sceneTime + dt;
+        if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
+          sceneIndex = 1;
+          sceneTime = 0.0;
+          sequencer1().playSequence();
+          std::cout << "started scene 1" << std::endl;
+        } else if (globalTime >= 119.0 && globalTime < 119.0 + dt) {
+          sceneIndex = 2;
+          sceneTime = 0.0;
+          sequencer2().playSequence();
+          std::cout << "started scene 2" << std::endl;
+        } else if (globalTime >= 335.0 && globalTime < 335.0 + dt) {
+          sceneIndex = 3;
+          sceneTime = 0.0;
+          sequencer3().playSequence();
+          std::cout << "started scene 3" << std::endl;
+        } else if (globalTime >= 444.0 && globalTime < 444.0 + dt) {
+          sceneIndex = 4;
+          sceneTime = 0.0;
+          sequencer4().playSequence();
+          std::cout << "started scene 4" << std::endl;
+        } else if (globalTime >= 936.0 && globalTime < 936.0 + dt) {
+          sceneIndex = 5;
+          sceneTime = 0.0;
+          sequencer5().playSequence();
+          std::cout << "started scene 5" << std::endl;
+        } else if (globalTime >= 1105.0 && globalTime < 1105.0 + dt) {
+          sceneIndex = 6;
+          sceneTime = 0.0;
+          sequencer6().playSequence();
+          std::cout << "started scene 6" << std::endl;
+        }
+
+        // state().sceneIndex = sceneIndex;
+        // state().sceneTime = sceneTime;
+        // pTime.set(sceneTime);
+        // pIndex.set(sceneIndex);
+      } else {
+        // sceneTime = localTime;
+      }
+    }
+  }
+
+  void onDraw(al::Graphics &g) override {
+
+    // SCENE 1 DRAW /////
+    if (running == true) {
+
+      // end of boilerplate
+    }
+  };
+
+  void onSound(al::AudioIOData &io) override {
+    if (isPrimary()) {
+      spatializer->prepare(io);
+
+      if (sceneIndex == 1) {
+        mSequencer1.render(io);
+      } else if (sceneIndex == 2) {
+        mSequencer2.render(io);
+      } else if (sceneIndex == 3) {
+        mSequencer3.render(io);
+      } else if (sceneIndex == 4) {
+        mSequencer4.render(io);
+      } else if (sceneIndex == 5) {
+        mSequencer5.render(io);
+      } else if (sceneIndex == 6) {
+        mSequencer6.render(io);
+      }
+
+      spatializer->renderBuffer(io, {0, 0, 0}, io.outBuffer(0),
+                                io.framesPerBuffer());
+      spatializer->finalize(io);
+    }
+  }
+
+  al::SynthSequencer mSequencer1;
+  al::SynthSequencer mSequencer2;
+  al::SynthSequencer mSequencer3;
+  al::SynthSequencer mSequencer4;
+  al::SynthSequencer mSequencer5;
+  al::SynthSequencer mSequencer6;
+
+  al::SynthSequencer &sequencer1() { return mSequencer1; }
+  al::SynthSequencer &sequencer2() { return mSequencer2; }
+  al::SynthSequencer &sequencer3() { return mSequencer3; }
+  al::SynthSequencer &sequencer4() { return mSequencer4; }
+  al::SynthSequencer &sequencer5() { return mSequencer5; }
+  al::SynthSequencer &sequencer6() { return mSequencer6; }
+};
+
+int main() {
+  MyApp app;
+
+  if (al::sphere::isSphereMachine())
+    app.configureAudio(44100, 512, 60, 0);
+  else
+    app.configureAudio(44100, 512, 2, 0);
+  app.start();
+  return 0;
+}
+
+std::string slurp(const std::string &fileName) {
+  std::ifstream file(fileName);
+  std::string contents((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+  return contents;
+}
