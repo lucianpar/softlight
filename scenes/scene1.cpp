@@ -50,11 +50,7 @@
 
 std::string slurp(const std::string &fileName);
 
-struct Common {
-  double sceneTime;
-  int sceneIndex;
-  bool running;
-};
+struct Common {};
 
 class MyApp : public al::DistributedAppWithState<Common> {
 
@@ -68,18 +64,25 @@ class MyApp : public al::DistributedAppWithState<Common> {
   al::Spatializer *spatializer{nullptr};
   al::Speakers speakerLayout;
 
-  al::ParameterBool pRunning{"running"};
-  al::Parameter pTime{"time", "", 0.0, 0.0, 10000};
-  al::ParameterInt pIndex{"index", "", 0, 0, 100};
+  // al::ParameterBool pRunning{"running"};
+  // al::Parameter pTime{"time", "", 0.0, 0.0, 10000}; 0ld stuff
+  // al::ParameterInt pIndex{"index", "", 0, 0, 100};
+
+  al::ParameterBool running{"running", "0", false};
+  al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 10000};
+  // al::Parameter sceneIndex{"sceneTime", "0", 0.0, 0.0, 10000};
+
   //
 
 public:
   // Global Time
   int sceneIndex = 0;
-  int previousIndex = 0;
-  double globalTime = 64;
-  double sceneTime = 64;
-  bool running = false;
+  // int previousIndex = 0;
+  double globalTime = 0;
+  float localTime;
+  // float sceneIndex = 0;
+  // double sceneTime = 64;
+  // bool running = false;
   std::string objPath;
   std::string Song1Path;
   std::string Song2Path;
@@ -150,7 +153,7 @@ public:
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
 
-    parameterServer() << pTime << pIndex << pRunning;
+    parameterServer() << running << sceneTime;
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
@@ -244,10 +247,10 @@ public:
     pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
                         slurp(pointGeomPath));
 
-    cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
-    if (!cuttleboneDomain) {
-      std::cerr << "ERRor: Cuttlebone not started" << std::endl;
-    }
+    // cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
+    // if (!cuttleboneDomain) {
+    //   std::cerr << "ERRor: Cuttlebone not started" << std::endl;
+    // }
 
     nav().pos(al::Vec3d(0, 0, 0));
     // sequencer().playSequence();
@@ -278,7 +281,7 @@ public:
     }
 
     // SCENE 1 CREATE ////
-    // get karl to help with path issues
+
     newObjParser.parse(objPath, bodyMesh);
     bodyMesh.translate(0, 3.5, -4);
     for (int i = 0; i < bodyMesh.vertices().size(); ++i) {
@@ -324,103 +327,106 @@ public:
   }
   bool onKeyDown(const al::Keyboard &k) override {
 
-    if (k.key() == ' ' && running == false) {
-      running = true;
-      std::cout << "started running" << std::endl;
-    } else if (k.key() == ' ' && running == true) {
-      running = false;
-      std::cout << "stopped running" << std::endl;
-    } else {
-      //   sceneTime = 0;
-      //   std::cout << "reset scene time to 0" << std::endl;
+    if (isPrimary()) {
+
+      if (k.key() == ' ' && running == false) {
+        running = true;
+        std::cout << "started running" << std::endl;
+      } else if (k.key() == ' ' && running == true) {
+        running = false;
+        std::cout << "stopped running" << std::endl;
+      } else {
+        //   sceneTime = 0;
+        //   std::cout << "reset scene time to 0" << std::endl;
+      }
+      if (k.key() == '1') {
+        sceneIndex = 1;
+        globalTime = 0.0;
+        sceneTime = 0.0;
+        running = true;
+        std::cout << "scene index: " << 1 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer1().playSequence();
+
+        return true;
+      }
+      if (k.key() == '2') {
+        sceneIndex = 2;
+        globalTime = 119.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 2 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer2().playSequence();
+
+        return true;
+      }
+      if (k.key() == '3') {
+        sceneIndex = 3;
+        globalTime = 335.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 3 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer3().playSequence();
+        return true;
+      }
+      if (k.key() == '4') {
+        sceneIndex = 4;
+        globalTime = 444.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 4 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer4().playSequence();
+        return true;
+      }
+      if (k.key() == '5') {
+        sceneIndex = 5;
+        globalTime = 936.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 5 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer5().playSequence();
+        return true;
+      }
+      if (k.key() == '6') {
+        sceneIndex = 6;
+        globalTime = 1105.0;
+        sceneTime = 0.0;
+        std::cout << "scene index: " << 6 << "global time: " << globalTime
+                  << std::endl;
+
+        sequencer6().playSequence();
+        return true;
+      }
+      return false;
     }
-    if (k.key() == '1') {
-      sceneIndex = 1;
-      globalTime = 0.0;
-      sceneTime = 0.0;
-      running = true;
-      std::cout << "scene index: " << 1 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer1().playSequence();
-
-      return true;
-    }
-    if (k.key() == '2') {
-      sceneIndex = 2;
-      globalTime = 119.0;
-      sceneTime = 0.0;
-      std::cout << "scene index: " << 2 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer2().playSequence();
-
-      return true;
-    }
-    if (k.key() == '3') {
-      sceneIndex = 3;
-      globalTime = 335.0;
-      sceneTime = 0.0;
-      std::cout << "scene index: " << 3 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer3().playSequence();
-      return true;
-    }
-    if (k.key() == '4') {
-      sceneIndex = 4;
-      globalTime = 444.0;
-      sceneTime = 0.0;
-      std::cout << "scene index: " << 4 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer4().playSequence();
-      return true;
-    }
-    if (k.key() == '5') {
-      sceneIndex = 5;
-      globalTime = 936.0;
-      sceneTime = 0.0;
-      std::cout << "scene index: " << 5 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer5().playSequence();
-      return true;
-    }
-    if (k.key() == '6') {
-      sceneIndex = 6;
-      globalTime = 1105.0;
-      sceneTime = 0.0;
-      std::cout << "scene index: " << 6 << "global time: " << globalTime
-                << std::endl;
-
-      sequencer6().playSequence();
-      return true;
-    }
-    return false;
   }
 
   // }
   void onAnimate(double dt) override {
     // boiler plate for every scene / main template
-    if (!isPrimary()) {
-      running = state().running;
-      running = pRunning.get();
-    } else {
-      state().running = running;
-      pRunning.set(running);
-    }
+    // if (!isPrimary()) {
+    // //   running = state().running;
+    // //   running = pRunning.get();
+    // // } else {
+    // //   state().running = running;
+    // //   pRunning.set(running);
+    // // }
 
-    std::cout << "running : " << state().running << std::endl;
-    std::cout << "index : " << state().sceneIndex << std::endl;
-    std::cout << "time : " << state().sceneTime << std::endl;
+    // std::cout << "running : " << state().running << std::endl;
+    // std::cout << "index : " << state().sceneIndex << std::endl;
+    // std::cout << "time : " << state().sceneTime << std::endl;
 
     if (running == true) {
 
       if (isPrimary()) {
         globalTime += dt;
         // time : " << globalTime << std::endl;
-        sceneTime += dt;
+        localTime += dt;
         if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
           sceneIndex = 1;
           sceneTime = 0.0;
@@ -453,15 +459,12 @@ public:
           std::cout << "started scene 6" << std::endl;
         }
 
-        state().sceneIndex = sceneIndex;
-        state().sceneTime = sceneTime;
-        pTime.set(sceneTime);
-        pIndex.set(sceneIndex);
+        // state().sceneIndex = sceneIndex;
+        // state().sceneTime = sceneTime;
+        // pTime.set(sceneTime);
+        // pIndex.set(sceneIndex);
       } else {
-        sceneTime = state().sceneTime;
-        sceneIndex = state().sceneIndex;
-        sceneTime = pTime.get();
-        sceneIndex = pIndex.get();
+        sceneTime = localTime;
       }
       // end of boilerplate
 

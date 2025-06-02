@@ -58,14 +58,14 @@ public:
   al::Material material;
   ShadedSphere shadedSphereScene4;
 
-  al::Parameter sceneTime{"sceneTime", "0", 85.0, 0.0, 300.0};
+  al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 300.0};
 
   al::ParameterBool running{"running", "0", false};
 
   // scene 4
 
-  std::string vertPathScene4;
-  std::string fragPathScene4;
+  std::string vertPathScene3;
+  std::string fragPathScene3;
 
   // Meshes and Effects
 
@@ -84,18 +84,18 @@ public:
 
     // scene 4
 
-    al::FilePath vertPath4 = searchPaths.find("standard.vert");
-    if (vertPath4.valid()) {
-      vertPathScene4 = vertPath4.filepath();
-      std::cout << "Found file at: " << vertPathScene4 << std::endl;
+    al::FilePath vertPath3 = searchPaths.find("standard.vert");
+    if (vertPath3.valid()) {
+      vertPathScene3 = vertPath3.filepath();
+      std::cout << "Found file at: " << vertPathScene3 << std::endl;
     } else {
       std::cout << "couldnt find ver scene 4 in path" << std::endl;
     }
-    al::FilePath fragPath4 =
+    al::FilePath fragPath3 =
         searchPaths.find("SpruceMain.frag"); // switch to spruce main
-    if (fragPath4.valid()) {
-      fragPathScene4 = fragPath4.filepath();
-      std::cout << "Found file at: " << fragPathScene4 << std::endl;
+    if (fragPath3.valid()) {
+      fragPathScene3 = fragPath3.filepath();
+      std::cout << "Found file at: " << fragPathScene3 << std::endl;
     } else {
       std::cout << "couldnt find frag scene 4 in path" << std::endl;
     }
@@ -120,7 +120,7 @@ public:
 
     // if (sceneIndex == 4) {
     shadedSphereScene4.setSphere(15.0, 20);
-    shadedSphereScene4.setShaders(vertPathScene4, fragPathScene4);
+    shadedSphereScene4.setShaders(vertPathScene3, fragPathScene3);
     shadedSphereScene4.update();
     // }
   }
