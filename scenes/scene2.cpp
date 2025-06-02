@@ -241,105 +241,80 @@ public:
 
           if (sceneTime < windSpeedSlow1) {
             targetSpeedScene2 = 3.0f;
-            scene2Boundary = 10.0f; // Initial fast with wide boundary
-          } else if (sceneTime >= windSpeedSlow1 &&
-                     sceneTime < windSpeedSuperSlow) {
-            targetSpeedScene2 = 0.5f; // 3s
-          } else if (sceneTime >= windSpeedSuperSlow &&
-                     sceneTime < windSpeedMedFast1) {
-            targetSpeedScene2 = 0.2f; // 3.5s
-          } else if (sceneTime >= windSpeedMedFast1 &&
-                     sceneTime < windSpeedSlow2) {
-            targetSpeedScene2 = 2.5f; // 11s
-          } else if (sceneTime >= windSpeedSlow2 &&
-                     sceneTime < windScaleLarge1) {
-            targetSpeedScene2 = 0.7f; // 23s
-          } else if (sceneTime >= windScaleLarge1 &&
-                     sceneTime < windSpeedMed2) {
-            blobSizeScene2 = 3.5f; // 31s
-          } else if (sceneTime >= windSpeedMed2 && sceneTime < windSpeedFast2) {
-            targetSpeedScene2 = 2.0f; // 34s
-          } else if (sceneTime >= windSpeedFast2 && sceneTime < windSpeedMed3) {
-            targetSpeedScene2 = 4.0f; // 39s
-          } else if (sceneTime >= windSpeedMed3 && sceneTime < windSpeedSlow4) {
-            blobSizeScene2 = 0.6f;
-            targetSpeedScene2 = 1.2f; // 44s
-          } else if (sceneTime >= windSpeedSlow4 &&
-                     sceneTime < windScaleHuge1) {
-            targetSpeedScene2 = 0.7f; // 49s
-          } else if (sceneTime >= windScaleHuge1 && sceneTime < windSpeedMed4) {
-            blobSizeScene2 = 3.5f; // 49s, small
-          } else if (sceneTime >= windSpeedMed4 &&
-                     sceneTime < windSpeedSlower5) {
-            targetSpeedScene2 = 2.0f;
-            blobSizeScene2 = 3.2f; // 1:07
-          } else if (sceneTime >= windSpeedSlower5 &&
-                     sceneTime < windScaleDownStart) {
-            targetSpeedScene2 = 0.7f; // 1:17
-          } else if (sceneTime >= windScaleDownStart &&
-                     sceneTime < windSpeedFast3) {
-            blobSizeScene2 = 1.5f; // 1:33 start scale down
-          } else if (sceneTime >= windSpeedFast3 &&
-                     sceneTime < windSpeedSlow5) {
-            targetSpeedScene2 = 3.5f;
-            blobSizeScene2 = 0.9f; // 1:36 fast + small
-          } else if (sceneTime >= windSpeedSlow5 &&
-                     sceneTime < windSpeedFast4) {
-            targetSpeedScene2 = 0.4f; // 1:39 slow
-          } else if (sceneTime >= windSpeedFast4 && sceneTime < windSpeedMed5) {
-            targetSpeedScene2 = 3.0f; // 1:41 speed up
-          } else if (sceneTime >= windSpeedMed5 &&
-                     sceneTime < windSizeFastTiny) {
-            targetSpeedScene2 = 0.6f; // 1:44 slow
-          } else if (sceneTime >= windSizeFastTiny &&
-                     sceneTime < windSpeedSlow7) {
+            scene2Boundary = 12.0f; // Start open and fast
+          } else if (sceneTime < windSpeedSuperSlow) {
+            targetSpeedScene2 = 0.5f;
+            scene2Boundary = 6.0f;
+          } else if (sceneTime < windSpeedMedFast1) {
+            targetSpeedScene2 = 0.2f;
+            scene2Boundary = 3.0f; // Tight = appear large
+          } else if (sceneTime < windSpeedSlow2) {
+            targetSpeedScene2 = 5.0f; // Emphasize size release
+            scene2Boundary = 18.0f;   // Open quickly = appear smaller
+          } else if (sceneTime < windScaleLarge1) {
+            targetSpeedScene2 = 0.7f;
+            scene2Boundary = 4.0f;
+          } else if (sceneTime < windSpeedMed2) {
+            targetSpeedScene2 = 5.5f; // Burst movement with scale jump
+            scene2Boundary = 20.0f;
+          } else if (sceneTime < windSpeedFast2) {
             targetSpeedScene2 = 4.0f;
-            blobSizeScene2 = 0.6f; // 2:03 tiny + fast
-          } else if (sceneTime >= windSpeedSlow7 &&
-                     sceneTime < windScaleHuge2) {
-            targetSpeedScene2 = 0.5f; // 2:06
-          } else if (sceneTime >= windScaleHuge2 && sceneTime < windSpeedMed6) {
-            blobSizeScene2 = 4.0f; // 2:13 huge
-          } else if (sceneTime >= windSpeedMed6 &&
-                     sceneTime < windScaleReturn) {
-            targetSpeedScene2 = 2.2f; // 2:22
-          } else if (sceneTime >= windScaleReturn &&
-                     sceneTime < windSpeedSlow8) {
-            blobSizeScene2 = 1.8f; // 2:26 return to original size
-          } else if (sceneTime >= windSpeedSlow8 &&
-                     sceneTime < windSpeedFast5) {
-            targetSpeedScene2 = 0.3f; // 2:30
-          } else if (sceneTime >= windSpeedFast5 &&
-                     sceneTime < windSpeedSuperSlow2) {
-            targetSpeedScene2 = 4.0f; // 2:44
-          } else if (sceneTime >= windSpeedSuperSlow2 &&
-                     sceneTime < windScaleFadeStart) {
-            targetSpeedScene2 = 0.2f; // 2:55
-          } else if (sceneTime >= windScaleFadeStart &&
-                     sceneTime < windSpeedMedSlow) {
-            blobSizeScene2 =
-                blobSizeScene2 * 0.995f; // 3:01 start gradual shrink
-            if (blobSizeScene2 < 0.05f)
-              blobSizeScene2 = 0.0f;
-            scene2Boundary = 2.0f; // constrain to keep them nearby
-          } else if (sceneTime >= windSpeedMedSlow &&
-                     sceneTime < windFinalSlowdown) {
-            targetSpeedScene2 = 0.5f; // 3:03
-          } else if (sceneTime >= windFinalSlowdown) {
+            scene2Boundary = 25.0f;
+          } else if (sceneTime < windSpeedMed3) {
+            targetSpeedScene2 = 1.2f;
+            scene2Boundary = 5.0f; // Dramatic zoom-in
+          } else if (sceneTime < windSpeedSlow4) {
+            targetSpeedScene2 = 0.7f;
+            scene2Boundary = 8.0f;
+          } else if (sceneTime < windSpeedMed4) {
+            targetSpeedScene2 = 4.5f;
+            scene2Boundary = 22.0f; // Blowout moment
+          } else if (sceneTime < windSpeedSlower5) {
+            targetSpeedScene2 = 0.7f;
+            scene2Boundary = 6.0f;
+          } else if (sceneTime < windSpeedFast3) {
+            targetSpeedScene2 = 3.5f;
+            scene2Boundary = 15.0f;
+          } else if (sceneTime < windSpeedSlow5) {
+            targetSpeedScene2 = 0.4f;
+            scene2Boundary = 3.5f;
+          } else if (sceneTime < windSpeedFast4) {
+            targetSpeedScene2 = 3.0f;
+            scene2Boundary = 18.0f;
+          } else if (sceneTime < windSpeedMed5) {
+            targetSpeedScene2 = 0.6f;
+            scene2Boundary = 10.0f;
+          } else if (sceneTime < windSpeedSlow7) {
+            targetSpeedScene2 = 6.0f; // Blast outward
+            scene2Boundary = 30.0f;
+          } else if (sceneTime < windSpeedMed6) {
+            targetSpeedScene2 = 0.5f;
+            scene2Boundary = 5.0f;
+          } else if (sceneTime < windScaleReturn) {
+            targetSpeedScene2 = 2.2f;
+            scene2Boundary = 14.0f;
+          } else if (sceneTime < windSpeedSlow8) {
+            targetSpeedScene2 = 0.3f;
+            scene2Boundary = 6.0f;
+          } else if (sceneTime < windSpeedFast5) {
+            targetSpeedScene2 = 4.0f;
+            scene2Boundary = 22.0f;
+          } else if (sceneTime < windSpeedSuperSlow2) {
+            targetSpeedScene2 = 0.2f;
+            scene2Boundary = 5.0f;
+          } else if (sceneTime < windScaleFadeStart) {
+            targetSpeedScene2 = 0.2f;
+            scene2Boundary = 3.0f;
+          } else if (sceneTime < windSpeedMedSlow) {
+            targetSpeedScene2 = 0.2f;
+            scene2Boundary = 2.0f; // Ultra-tight presence
+          } else if (sceneTime < windFinalSlowdown) {
+            targetSpeedScene2 = 0.5f;
+            scene2Boundary = 4.0f;
+          } else {
             targetSpeedScene2 = 0.001f;
-            blobSizeScene2 = 0.001f;
-            scene2Boundary = 60.0f; // let them drift (final fade)
-            // blobsEffectChain.clear(); // optional stop effects
-          }
-
-          // Smooth the speed
-          currentSpeedScene2 =
-              currentSpeedScene2 +
-              (targetSpeedScene2 - currentSpeedScene2) * interpRateScene2;
-
-          // Expand boundary once early
-          if (sceneTime >= 0.2) {
-            scene2Boundary = 4.0;
+            scene2Boundary = 60.0f; // Full release drift
+            // blobsEffectChain.clear(); // Optional: end FX
           }
         }
 
@@ -354,7 +329,8 @@ public:
               blobs[i].moveF(blobSizeScene2);
             }
             // for setting state for renderers
-            blobs[i].moveF(currentSpeedScene2 * 30.0f); // use smoothed speed
+            blobs[i].moveF(currentSpeedScene2 * 30.0f *
+                           20.0f); // use smoothed speed
             blobs[i].step(dt);
             state().blobPosX[i] = blobs[i].pos().x;
             state().blobPosY[i] = blobs[i].pos().y;

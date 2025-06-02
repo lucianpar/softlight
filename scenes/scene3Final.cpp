@@ -83,7 +83,7 @@ public:
     pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
                         slurp(pointGeomPath));
 
-    al::addSphere(cloudMeshScene4, 3.5, 150, 150);
+    al::addSphere(cloudMeshScene4, 3.5, 200, 200); // make 150 150 if buggy
     cloudMeshScene4.primitive(al::Mesh::POINTS);
     for (auto &v : cloudMeshScene4.vertices()) {
       cloudMeshScene4.color(1.0, 0.3, 0.1, 1.0);
