@@ -52,11 +52,13 @@ public:
 
   al::Parameter scene3PointSize{"scene3PointSize", "", 0.0, 0.0, 0.03};
   al::Parameter scene3ParamB{"scene3paramB", "", 0.11, 0.0, 1.0};
+  al::Parameter scene3Speed{"scene3Speed", "", 0.11, 0.0, 1.0};
   al::Parameter sceneTime{"sceneTime", "", 0.0, 0.0, 300.0};
 
   al::ParameterBool running{"running", "0", false};
 
   double globalTime = 0;
+  float localTime;
 
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
@@ -95,8 +97,11 @@ public:
 
   void onAnimate(double dt) override {
     if (running == true) {
-      globalTime += dt;
-      sceneTime = sceneTime + dt;
+      if (isPrimary()) {
+        globalTime += dt;
+        localTime += dt;
+      }
+      sceneTime = localTime;
 
       for (auto &v : cloudMeshScene4.vertices()) {
         v += al::Vec3f(0, 0, -0.02);
