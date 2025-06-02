@@ -5,10 +5,10 @@ out vec4 fragColor;
 
 uniform float u_time;
 
-const float zoom = 0.010;
+const float zoom = 10.0;
 const float speed = 0.1;
 const float formuparam = 0.53;
-const int iterations = 14;
+const int iterations = 15;
 const int volsteps = 5;
 
 const float stepsize = 0.1; // this is super important 
@@ -37,8 +37,8 @@ void main() {
     // Prevent division by zero
     float a2 = vPos.y != 0.0 ? vPos.x/vPos.y : vPos.x;
     // Use stable value for rotation instead of directly using vPos.y
-    mat2 rot1 = mat2(cos(vPos.y), sin(a1), -sin(vPos.y), cos(a1*u_time));
-    mat2 rot2 = mat2(cos(vPos.x), sin(a2/u_time), -sin(a2), abs(a2-vPos.x));
+    mat2 rot1 = mat2(cos(a1), sin(a1), -sin(vPos.y), cos(a1));
+    mat2 rot2 = mat2(cos(vPos.x), sin(a2), -sin(a2), abs(a2));
     dir.xz *= rot1; dir.xy *= rot2;
     from.xz *= rot1; from.xy *= rot2;
 
@@ -46,21 +46,18 @@ void main() {
     vec3 v = vec3(0.0);
 
     for (int r = 0; r < volsteps; r++) {
-       vec3 p = from + s * dir * 0.5;
-p = smoothstep(0.0, tile, abs(mod(p, tile * 2.0) - tile));
+        vec3 p = from + s * dir * 0.5;
+        p = smoothstep(0.0, tile, abs(mod(p, tile * 2.0) - tile));
 
-// SCALE fractal space to make formations larger
-p *= 0.5;
+        float pa = 0.0, a = 0.0;
+        for (int i = 0; i < iterations; i++) {
+            p = abs(p) / dot(p, p) - formuparam;
+            a += abs(length(p) - pa / (2.0 * abs(vPos.y) / ((u_time / songLength + 0.1)) / 10.0)); // key to expl
+            pa = length(p) + (abs(vPos.x) / (a + 0.001)); // add safety factor to prevent division by zero
+        }
 
-float pa = 0.0, a = 0.0;
-for (int i = 0; i < iterations; i++) {
-    p = abs(p) / dot(p, p) - formuparam;
-    a += abs(length(p) - pa / cos(2.0 * abs(vPos.y) / ((u_time / songLength + 0.1)) / 10.0));
-    pa = length(p) + (abs(vPos.x) / cos(a + 0.001));
-    
-}
         float dm = max(0.0, darkmatter - a * a * 0.001);
-        a *= a * atan(a);
+        a *= a * a;
         //a = pow(a, 2.5); 
 
         if (r > 6) fade *= 1.0 - dm;
@@ -73,13 +70,12 @@ for (int i = 0; i < iterations; i++) {
 
     v = mix(vec3(length(v)), v, saturation);
 
- 
     float intensity = length(v);
 vec3 blue = vec3(0.2, 0.6, 1.0);  // highlight blue
-vec3 base = vec3(0.3);            // white ambient
+vec3 base = vec3(1.0);            // white ambient
 
 // Color interpolation based on brightness
-vec3 finalColor = mix(base, blue, smoothstep(0.1, 0.4, intensity));
+vec3 finalColor = mix(base, blue, smoothstep(0.1, 2.0, intensity));
 
 // Scale brightness as before
 fragColor = vec4(finalColor * 0.01 * intensity, 1.0);
