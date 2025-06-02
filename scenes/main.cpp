@@ -51,6 +51,12 @@
 
 std::string slurp(const std::string &fileName);
 
+al::Vec3f randomVec3f(float scale) {
+  return al::Vec3f(al::rnd::uniformS(), al::rnd::uniformS(),
+                   al::rnd::uniformS()) *
+         scale;
+}
+
 struct Common {};
 
 class MyApp : public al::DistributedAppWithState<Common> {
@@ -701,6 +707,51 @@ public:
     }
     // } else {
     //   g.clear(0.0);
+  }
+
+  void createScene2() {
+    parameterServer() << blobSeperationThresh;
+    // parameterServer() << scene2Boundary;
+    parameterServer() << currentSpeedScene2;
+    parameterServer() << targetSpeedScene2;
+    parameterServer() << interpRateScene2;
+    parameterServer() << inSphereScene2;
+    // parameterServer() << blobSizeScene2;
+    //  if (isPrimary()) {
+    addSphere(blobMesh, 1.8, 40, 40);
+    blobMesh.primitive(
+        al::Mesh::LINE_STRIP_ADJACENCY); // test if i like lines of triangles
+                                         // more in the sphere
+    blobMesh.generateNormals();
+    creature.addStarfish(starCreatureMesh);
+    starCreatureMesh.update();
+
+    for (int b = 0; b < nAgentsScene2; ++b) {
+      al::Nav p;
+      blobs.push_back(p);
+    }
+
+    // Only assign random positions and orientations on primary node
+    if (isPrimary()) {
+      for (int b = 0; b < nAgentsScene2; ++b) {
+        blobs[b].pos() = randomVec3f(5.0f);
+        blobs[b]
+            .quat()
+            .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
+                 al::rnd::uniformS())
+            .normalize();
+      }
+    }
+
+    blobMesh.update();
+
+    blobsRippleX.setParams(0.2, 0.1, 1.0, 'x');
+    blobsRippleZ.setParams(0.4, 0.1, 1.0, 'z');
+    blobsEffectChain.pushBack(&blobsRippleZ);
+    blobsEffectChain.pushBack(&blobsRippleX);
+    starRipple.setParams(1.0, 1.0, 1.0, 'z');
+    starEffectChain.pushBack(&starRipple);
+    blobMesh.update();
   }
 
   void onSound(al::AudioIOData &io) override {

@@ -158,6 +158,51 @@ public:
 
   void onInit() override { gam::sampleRate(audioIO().framesPerSecond()); }
 
+  void createScene2() {
+    parameterServer() << blobSeperationThresh;
+    // parameterServer() << scene2Boundary;
+    parameterServer() << currentSpeedScene2;
+    parameterServer() << targetSpeedScene2;
+    parameterServer() << interpRateScene2;
+    parameterServer() << inSphereScene2;
+    // parameterServer() << blobSizeScene2;
+    //  if (isPrimary()) {
+    addSphere(blobMesh, 1.8, 40, 40);
+    blobMesh.primitive(
+        al::Mesh::LINE_STRIP_ADJACENCY); // test if i like lines of triangles
+                                         // more in the sphere
+    blobMesh.generateNormals();
+    creature.addStarfish(starCreatureMesh);
+    starCreatureMesh.update();
+
+    for (int b = 0; b < nAgentsScene2; ++b) {
+      al::Nav p;
+      blobs.push_back(p);
+    }
+
+    // Only assign random positions and orientations on primary node
+    if (isPrimary()) {
+      for (int b = 0; b < nAgentsScene2; ++b) {
+        blobs[b].pos() = randomVec3f(5.0f);
+        blobs[b]
+            .quat()
+            .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
+                 al::rnd::uniformS())
+            .normalize();
+      }
+    }
+
+    blobMesh.update();
+
+    blobsRippleX.setParams(0.2, 0.1, 1.0, 'x');
+    blobsRippleZ.setParams(0.4, 0.1, 1.0, 'z');
+    blobsEffectChain.pushBack(&blobsRippleZ);
+    blobsEffectChain.pushBack(&blobsRippleX);
+    starRipple.setParams(1.0, 1.0, 1.0, 'z');
+    starEffectChain.pushBack(&starRipple);
+    blobMesh.update();
+  }
+
   void onCreate() override {
     ////BIOLERPLATE////
     nav().pos(al::Vec3d(0, 0, 0)); // Set the camera to view the scene
@@ -517,6 +562,43 @@ public:
   }
 
   // END OF ANIMATE CALLBACK
+
+  void drawScene2(al::Graphics &g) {
+    g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334.0 - 118.0)) * 0.8));
+    g.light(light);
+
+    g.blendTrans();
+    g.depthTesting(true);
+
+    g.lighting(true); // flashing / flickering -- comment this out if needed
+    // lighting from karl's example
+    light.globalAmbient(al::RGB(0.5, (1.0), 1.0));
+    light.ambient(al::RGB(0.5, (1.0), 1.0));
+    light.diffuse(al::RGB(1, 1, 0.5));
+
+    material.specular(light.diffuse());
+    material.shininess(50);
+    g.material(material);
+
+    for (int i = 0; i < blobs.size(); ++i) {
+      al::Vec3f newColor = colorPallete[i % 3];
+
+      g.pushMatrix();
+      g.translate(blobs[i].pos());
+      g.rotate(blobs[i].quat());
+      g.scale(1.5);
+      if (i % 2 == 1) {
+        g.color(newColor.x, newColor.y, newColor.z,
+                0.3 + (sin(sceneTime * 2.0) * 0.1));
+        g.draw(blobMesh);
+      } else {
+        g.color(newColor.x + 0.4, newColor.y + 0.4, newColor.z + 0.4,
+                0.4 + (sin(sceneTime * 0.6) * 0.1));
+        g.draw(starCreatureMesh);
+      }
+      g.popMatrix();
+    }
+  }
 
   void onDraw(al::Graphics &g) override {
 
