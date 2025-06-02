@@ -73,6 +73,7 @@ public:
   // GLOBAL TIME PARAMS//
   double globalTime = 0;
   double localTime = 0;
+  // double sceneTime = 0;
   al::Parameter sceneTime{"SceneTime", 0.0, 0.0, 600.0};
   al::ParameterBool running{"running", "0", true};
 

@@ -164,9 +164,10 @@ public:
   void onAnimate(double dt) override {
     if (isPrimary()) {
       globalTime += dt;
-      localTime += dt;
+      sceneTime += dt;
+      // localTime += dt;
     }
-    sceneTime = localTime; // parameter - getting sent to everyone
+    // sceneTime = localTime; // parameter - getting sent to everyone
 
     // sequencer().update(globalTime);
     std::cout << "global time: " << globalTime << std::endl;

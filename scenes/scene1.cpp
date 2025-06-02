@@ -50,7 +50,9 @@
 
 std::string slurp(const std::string &fileName);
 
-struct Common {};
+struct Common {
+  // float sceneTimeState;
+};
 
 class MyApp : public al::DistributedAppWithState<Common> {
 
@@ -68,9 +70,11 @@ class MyApp : public al::DistributedAppWithState<Common> {
   // al::Parameter pTime{"time", "", 0.0, 0.0, 10000}; 0ld stuff
   // al::ParameterInt pIndex{"index", "", 0, 0, 100};
 
-  al::ParameterBool running{"running", "0", false};
-  al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 10000};
+  al::ParameterBool runningParam{"runningParam", "0", false};
+  // al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 10000};
   // al::Parameter sceneIndex{"sceneTime", "0", 0.0, 0.0, 10000};
+
+  al::Parameter sceneTimeParam{"sceneTime", "", 0.0f, 0.0f, 2000.0f};
 
   //
 
@@ -80,6 +84,9 @@ public:
   // int previousIndex = 0;
   double globalTime = 0;
   float localTime;
+  float sceneTime = 0.0;
+  bool running = false;
+
   // float sceneIndex = 0;
   // double sceneTime = 64;
   // bool running = false;
@@ -153,7 +160,9 @@ public:
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
 
-    parameterServer() << running << sceneTime;
+    // parameterServer() << running << sceneTime;
+
+    parameterServer() << sceneTimeParam;
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
@@ -410,8 +419,8 @@ public:
   void onAnimate(double dt) override {
     // boiler plate for every scene / main template
     // if (!isPrimary()) {
-    // //   running = state().running;
-    // //   running = pRunning.get();
+    //   // //   running = state().running;
+    //   running = pRunning.get();
     // // } else {
     // //   state().running = running;
     // //   pRunning.set(running);
@@ -420,13 +429,24 @@ public:
     // std::cout << "running : " << state().running << std::endl;
     // std::cout << "index : " << state().sceneIndex << std::endl;
     // std::cout << "time : " << state().sceneTime << std::endl;
+    if (isPrimary()) {
+      runningParam.set(running);
+    }
 
-    if (running == true) {
+    if (running == true && runningParam == true) {
 
+      globalTime += dt;
+      sceneTime += dt;
+      // sceneTimeParam.set(sceneTime); // sync via parameter
+
+      // time : " << globalTime << std::endl;
+      // localTime += dt;
+      // sceneTime += dt;
+      // sceneTime.set(localTime); // GUI & scripting see this
+
+      // state().sceneTimeState = localTime;
+      // sceneTime.set(localTime);
       if (isPrimary()) {
-        globalTime += dt;
-        // time : " << globalTime << std::endl;
-        localTime += dt;
         if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
           sceneIndex = 1;
           sceneTime = 0.0;
@@ -463,10 +483,11 @@ public:
         // state().sceneTime = sceneTime;
         // pTime.set(sceneTime);
         // pIndex.set(sceneIndex);
-      } else {
-        sceneTime = localTime;
+        // } else {
+        //   sceneTime.set(state().sceneTimeState); // sync from primary
       }
-      // end of boilerplate
+      // sceneTime = sceneTimeParam.get(); // receive sync
+      //  end of boilerplate
 
       // SCENE 1 ANIMATE
 
