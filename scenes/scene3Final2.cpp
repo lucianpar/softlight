@@ -58,7 +58,7 @@ public:
   al::Material material;
   ShadedSphere shadedSphereScene4;
 
-  al::Parameter sceneTime{"sceneTime", "", 0.0, 0.0, 300.0};
+  al::Parameter sceneTime{"sceneTime", "0", 85.0, 0.0, 300.0};
 
   al::ParameterBool running{"running", "0", false};
 
@@ -92,7 +92,7 @@ public:
       std::cout << "couldnt find ver scene 4 in path" << std::endl;
     }
     al::FilePath fragPath4 =
-        searchPaths.find("SpruceMainNew.frag"); // switch to spruce main
+        searchPaths.find("SpruceMain.frag"); // switch to spruce main
     if (fragPath4.valid()) {
       fragPathScene4 = fragPath4.filepath();
       std::cout << "Found file at: " << fragPathScene4 << std::endl;

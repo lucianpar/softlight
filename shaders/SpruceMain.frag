@@ -266,7 +266,9 @@ vec4 shaderSpruce4(vec2 uv, float t) {
 }
 
 
-
+float ease(float x) {
+    return x * x * (3.0 - 2.0 * x); // smooth cubic easing
+}
 // === Main ===
 void main() {
     vec2 uv = (vPos.xy + vec2(1.0)) * 0.5;
@@ -275,23 +277,45 @@ void main() {
     vec4 c1, c2;
     float blend = 0.0;
 
-    if (t < 6.5) {
-        c1 = shaderSpruce1(uv, t);
-        c2 = shaderSpruce2(uv, t);
-        blend = smoothstep(3.8, 6.2, t);  // smoother transition over ~2.4s
-    } else if (t < 10.0) {
-        c1 = shaderSpruce2(uv, t);
-        c2 = shaderSpruce3(uv, t);
-        blend = smoothstep(9.0, 10.0, t); // leave unchanged
-    } else if (t < 16.5) {
-        c1 = shaderSpruce3(uv, t);
-        c2 = shaderSpruce4(uv, t);
-        blend = smoothstep(13.8, 16.2, t);  // smoother 3→4 blend
-    } else {
-        c1 = shaderSpruce4(uv, t);
-        c2 = shaderSpruce4(uv, t);
-        blend = 0.0;
+    if (t < 25.0) {
+        fragColor = shaderSpruce1(uv, t);
     }
-
-    fragColor = mix(c1, c2, blend);
+    else if (t < 28.0) {
+        float b = ease(smoothstep(25.0, 28.0, t));
+        c1 = shaderSpruce1(uv, 25.0);
+        c2 = shaderSpruce2(uv, t - 25.0);
+        fragColor = mix(c1, c2, b);
+    }
+    else if (t < 45.0) {
+        fragColor = shaderSpruce2(uv, t - 25.0);
+    }
+    else if (t < 48.0) {
+        float b = ease(smoothstep(45.0, 48.0, t));
+        c1 = shaderSpruce2(uv, 20.0); // fixed t
+        vec4 rampIn = shaderSpruce3(uv, t - 45.0) * b; // ramp brightness
+        fragColor = mix(c1, rampIn, b);
+    }
+    else if (t < 77.0) {
+        float ramp = smoothstep(48.0, 50.0, t);
+        fragColor = shaderSpruce3(uv, t - 45.0) * ramp;
+    }
+    else if (t < 81.0) {
+        float b = ease(smoothstep(77.0, 81.0, t));
+        c1 = shaderSpruce3(uv, 32.0);
+        c2 = shaderSpruce4(uv, t - 77.0) * b;
+        fragColor = mix(c1, c2, b);
+    }
+    else if (t < 93.0) {
+        float ramp = smoothstep(81.0, 85.0, t);
+        fragColor = shaderSpruce4(uv, t - 77.0) * ramp;
+    }
+    else if (t < 108.0) {
+        float fade = smoothstep(90.0, 108.0, t);
+        vec4 c = shaderSpruce4(uv, (t - 77.0) * 1.8); // speed-up
+        vec3 darkened = mix(c.rgb, vec3(0.05, 0.08, 0.1), fade);
+        fragColor = vec4(darkened, 1.0);
+    }
+    else {
+        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
 }
