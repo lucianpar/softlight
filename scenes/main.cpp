@@ -69,8 +69,9 @@ class MyApp : public al::DistributedAppWithState<Common> {
   // al::Parameter pTime{"time", "", 0.0, 0.0, 10000}; 0ld stuff
   // al::ParameterInt pIndex{"index", "", 0, 0, 100};
 
-  al::ParameterBool running{"running", "0", false};
-  al::Parameter sceneTime{"sceneTime", "0", 0.0, 0.0, 10000};
+  al::ParameterBool runningParam{"runningParam", "0", false};
+  al::Parameter sceneTimeParam{"sceneTimeParam", "0", 0.0, 0.0, 10000};
+  al::Parameter sceneIndexParam{"sceneIndexParam", "0", 1, 0, 6};
   // al::Parameter sceneIndex{"sceneTime", "0", 0.0, 0.0, 10000};
 
   //
@@ -79,6 +80,8 @@ public:
   int sceneIndex = 0;
   // int previousIndex = 0;
   double globalTime = 0;
+  double sceneTime;
+  bool running = false;
   float localTime;
   // float sceneIndex = 0;
   // double sceneTime = 64;
@@ -110,7 +113,7 @@ public:
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
 
-    parameterServer() << running << sceneTime;
+    parameterServer() << runningParam << sceneTimeParam << sceneIndexParam;
 
     // SPATIAL STUFF
     audioIO().channelsBus(1);
@@ -204,56 +207,56 @@ public:
       } else {
         std::cout << "couldnt find song6 in path" << std::endl;
       }
+    }
 
-      // scene 3 paths
-      al::FilePath vertPath3 = searchPaths.find("standard.vert");
-      if (vertPath3.valid()) {
-        vertPathScene3 = vertPath3.filepath();
-        std::cout << "Found file at: " << vertPathScene3 << std::endl;
-      } else {
-        std::cout << "couldnt find ver scene 4 in path" << std::endl;
-      }
-      al::FilePath fragPath3 =
-          searchPaths.find("SpruceMain.frag"); // switch to spruce main
-      if (fragPath3.valid()) {
-        fragPathScene3 = fragPath3.filepath();
-        std::cout << "Found file at: " << fragPathScene3 << std::endl;
-      } else {
-        std::cout << "couldnt find frag scene 4 in path" << std::endl;
-      }
+    // scene 3 paths
+    al::FilePath vertPath3 = searchPaths.find("standard.vert");
+    if (vertPath3.valid()) {
+      vertPathScene3 = vertPath3.filepath();
+      std::cout << "Found file at: " << vertPathScene3 << std::endl;
+    } else {
+      std::cout << "couldnt find ver scene 4 in path" << std::endl;
+    }
+    al::FilePath fragPath3 =
+        searchPaths.find("SpruceMain.frag"); // switch to spruce main
+    if (fragPath3.valid()) {
+      fragPathScene3 = fragPath3.filepath();
+      std::cout << "Found file at: " << fragPathScene3 << std::endl;
+    } else {
+      std::cout << "couldnt find frag scene 4 in path" << std::endl;
+    }
 
-      // scene 4 paths :
-      al::FilePath vertPath4 = searchPaths.find("standard.vert");
-      if (vertPath4.valid()) {
-        vertPathScene4 = vertPath4.filepath();
-        std::cout << "Found file at: " << vertPathScene4 << std::endl;
-      } else {
-        std::cout << "couldnt find ver scene 4 in path" << std::endl;
-      }
-      al::FilePath fragPath4 = searchPaths.find("FoamMain.frag");
-      if (fragPath4.valid()) {
-        fragPathScene4 = fragPath4.filepath();
-        std::cout << "Found file at: " << fragPathScene4 << std::endl;
-      } else {
-        std::cout << "couldnt find frag scene 4 in path" << std::endl;
-      }
+    // scene 4 paths :
+    al::FilePath vertPath4 = searchPaths.find("standard.vert");
+    if (vertPath4.valid()) {
+      vertPathScene4 = vertPath4.filepath();
+      std::cout << "Found file at: " << vertPathScene4 << std::endl;
+    } else {
+      std::cout << "couldnt find ver scene 4 in path" << std::endl;
+    }
+    al::FilePath fragPath4 = searchPaths.find("FoamMain.frag");
+    if (fragPath4.valid()) {
+      fragPathScene4 = fragPath4.filepath();
+      std::cout << "Found file at: " << fragPathScene4 << std::endl;
+    } else {
+      std::cout << "couldnt find frag scene 4 in path" << std::endl;
+    }
 
-      // scene 5 paths
+    // scene 5 paths
 
-      al::FilePath vertPath5 = searchPaths.find("standard.vert");
-      if (vertPath5.valid()) {
-        vertPathScene5 = vertPath5.filepath();
-        std::cout << "Found file at: " << vertPathScene5 << std::endl;
-      } else {
-        std::cout << "couldnt find vert scene 5 in path" << std::endl;
-      }
-      al::FilePath fragPath5 = searchPaths.find("CrushedMain.frag");
-      if (fragPath5.valid()) {
-        fragPathScene5 = fragPath5.filepath();
-        std::cout << "Found file at: " << fragPathScene5 << std::endl;
-      } else {
-        std::cout << "couldnt find frag scene 5 in path" << std::endl;
-      }
+    al::FilePath vertPath5 = searchPaths.find("standard.vert");
+    if (vertPath5.valid()) {
+      vertPathScene5 = vertPath5.filepath();
+      std::cout << "Found file at: " << vertPathScene5 << std::endl;
+    } else {
+      std::cout << "couldnt find vert scene 5 in path" << std::endl;
+    }
+    al::FilePath fragPath5 = searchPaths.find("CrushedMain.frag");
+    if (fragPath5.valid()) {
+      fragPathScene5 = fragPath5.filepath();
+      std::cout << "Found file at: " << fragPathScene5 << std::endl;
+    } else {
+      std::cout << "couldnt find frag scene 5 in path" << std::endl;
     }
   }
 
@@ -392,19 +395,28 @@ public:
         sequencer6().playSequence();
         return true;
       }
+      sceneIndexParam.set(sceneIndex);
       return false;
     }
+    sceneIndex = sceneIndexParam;
   }
 
   void onAnimate(double dt) override {
+
+    if (isPrimary()) {
+      runningParam.set(running);
+    } else {
+      running = runningParam.get();
+    }
+
     // boiler plate for every scene / main template
     // if (!isPrimary()) {
-    // //   running = state().running;
-    // //   running = pRunning.get();
-    // // } else {
-    // //   state().running = running;
-    // //   pRunning.set(running);
-    // // }
+    //   running = state().running;
+    //   running = pRunning.get();
+    // } else {
+    //   state().running = running;
+    //   pRunning.set(running);
+    // }
 
     // std::cout << "running : " << state().running << std::endl;
     // std::cout << "index : " << state().sceneIndex << std::endl;
@@ -425,32 +437,46 @@ public:
         // sceneTime = sceneTime + dt;
         if (globalTime >= 0.0 && globalTime < 0.0 + dt) {
           sceneIndex = 1;
+          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer1().playSequence();
           std::cout << "started scene 1" << std::endl;
         } else if (globalTime >= 119.0 && globalTime < 119.0 + dt) {
           sceneIndex = 2;
+          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer2().playSequence();
           std::cout << "started scene 2" << std::endl;
         } else if (globalTime >= 335.0 && globalTime < 335.0 + dt) {
           sceneIndex = 3;
+          sceneIndexParam.set(sceneIndex);
+
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer3().playSequence();
           std::cout << "started scene 3" << std::endl;
         } else if (globalTime >= 444.0 && globalTime < 444.0 + dt) {
           sceneIndex = 4;
+          sceneIndexParam.set(sceneIndex);
+
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer4().playSequence();
           std::cout << "started scene 4" << std::endl;
         } else if (globalTime >= 936.0 && globalTime < 936.0 + dt) {
           sceneIndex = 5;
+          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer5().playSequence();
           std::cout << "started scene 5" << std::endl;
         } else if (globalTime >= 1105.0 && globalTime < 1105.0 + dt) {
           sceneIndex = 6;
+          sceneIndexParam.set(sceneIndex);
           sceneTime = 0.0;
+          sceneTimeParam.set(sceneTime);
           sequencer6().playSequence();
           std::cout << "started scene 6" << std::endl;
         }
@@ -460,8 +486,14 @@ public:
         // pTime.set(sceneTime);
         // pIndex.set(sceneIndex);
       } else {
+        sceneIndex = sceneIndexParam.get();
+        sceneTime = sceneTimeParam.get();
+
         // sceneTime = localTime;
       }
+      shadedSphereScene3.update();
+      shadedSphereScene4.update();
+      shadedSphereScene5.update();
     }
   }
 
@@ -477,6 +509,7 @@ public:
         shadedSphereScene3.setUniformFloat("u_time", sceneTime);
 
         shadedSphereScene3.draw(g);
+        shadedSphereScene3.update();
       }
       if (sceneIndex == 4) {
         g.clear(0.0);
