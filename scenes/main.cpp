@@ -780,7 +780,7 @@ public:
                                     attractorSpeedScene1);
         attractorMesh.translate(
 
-            0, 5 * 0.00005, -5 * 0.00005);
+            0, 20 * 0.00001, -5 * 0.00002);
       }
 
       if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
@@ -789,19 +789,19 @@ public:
                                     attractorSpeedScene1);
         attractorMesh.translate(
 
-            0, 5 * 0.0001, -5 * 0.0001);
+            0, 40 * 0.0001, -5 * 0.00003);
       }
       if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
-        attractorSpeedScene1 = 0.00001;
+        attractorSpeedScene1 = 0.00005;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
         attractorMesh.translate(
 
-            0, 0, -15 * 0.0002);
+            0, 300 * 0.00005, -15 * 0.00005);
       }
 
       if (sceneTime >= stopSpeedUpEvent) {
-        attractorSpeedScene1 = 0.00005;
+        attractorSpeedScene1 = 0.00001;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
         // attractorMesh.translate(
@@ -818,16 +818,16 @@ public:
         }
       }
       if (sceneTime >= moveInEvent) {
-        attractorSpeedScene1 = 0.0000001;
+        attractorSpeedScene1 = 0.00001;
         mainAttractor.processThomas(attractorMesh, sceneTime,
                                     attractorSpeedScene1);
-        bodyScatter.setParams(3.5, 20.0);
+        bodyScatter.setParams(6, 20.0);
         bodyScatter.triggerIn(true);
 
         attractorMesh.translate(
 
-            -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
-        attractorMesh.scale(0.995);
+            0, 4500.5 * 0.00001, -4000.0 * 0.00001);
+        // attractorMesh.scale(0.996);
       }
       bodyEffectChain.process(bodyMesh, sceneTime);
     }
