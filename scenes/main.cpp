@@ -1060,7 +1060,7 @@ public:
 
   void drawScene2(al::Graphics &g) {
     std::cout << "scene 2 draw " << std::endl;
-    g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334.0 - 118.0)) * 0.8));
+    g.clear(0.0, 0.0, 0.09 + ((sceneTime / (334.0 - 118.0)) * 0.15));
     g.light(light);
 
     g.blendTrans();
@@ -1174,7 +1174,8 @@ public:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     g.depthTesting(true);
-    g.clear(0.1, 0.0, 0.3);
+    // g.clear(0.1, 0.0, 0.3 * (1.0 - (sceneTime- / (557.0))));
+    g.clear(0.1, 0.0, 0.3 * (1.3 - (sceneTime / 557.0)));
     g.lighting(true);
     light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
     light.ambient(al::RGB(1.0, 1.0, 1.0));
