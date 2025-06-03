@@ -68,6 +68,9 @@ struct Common {
   //  int sceneIndex;
   //  bool running;
 
+  // scene 1
+  al::Vec3f scene1Mesh[10000];
+
   // scene 2
   float blobPosX[nAgentsScene2];
   float blobPosY[nAgentsScene2];
@@ -761,69 +764,80 @@ public:
 
   void animateScene1(double dt) {
 
-    if (sceneTime < particlesSlowRippleEvent) {
-      mainAttractor.processThomas(attractorMesh, sceneTime, 0);
+    // animate vertices
+    if (isPrimary()) {
+      if (sceneTime < particlesSlowRippleEvent) {
+        mainAttractor.processThomas(attractorMesh, sceneTime, 0);
+      }
+
+      if (sceneTime >= particlesSlowRippleEvent &&
+          sceneTime <= rippleSpeedUpEvent) {
+        attractorSpeedScene1 = 0.00005;
+        mainAttractor.processThomas(attractorMesh, sceneTime,
+                                    attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 5 * 0.00005, -5 * 0.00005);
+      }
+
+      if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
+        attractorSpeedScene1 = 0.00015;
+        mainAttractor.processThomas(attractorMesh, sceneTime,
+                                    attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 5 * 0.0001, -5 * 0.0001);
+      }
+      if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
+        attractorSpeedScene1 = 0.00001;
+        mainAttractor.processThomas(attractorMesh, sceneTime,
+                                    attractorSpeedScene1);
+        attractorMesh.translate(
+
+            0, 0, -15 * 0.0002);
+      }
+
+      if (sceneTime >= stopSpeedUpEvent) {
+        attractorSpeedScene1 = 0.00005;
+        mainAttractor.processThomas(attractorMesh, sceneTime,
+                                    attractorSpeedScene1);
+        // attractorMesh.translate(
+
+        //     0, 0, -10 * 0.0002);
+        // mainEffectChain.process(attractorMesh, sceneTime); //ripple
+        // commented out
+      }
+
+      // body mesh effects
+      if (sceneTime >= bodyCloudAppear) {
+        if (bodyAlphaIncScene1 < 1.0) {
+          bodyAlphaIncScene1 += 0.0000000000000001;
+        }
+      }
+      if (sceneTime >= moveInEvent) {
+        attractorSpeedScene1 = 0.0000001;
+        mainAttractor.processThomas(attractorMesh, sceneTime,
+                                    attractorSpeedScene1);
+        bodyScatter.setParams(3.5, 20.0);
+        bodyScatter.triggerIn(true);
+
+        attractorMesh.translate(
+
+            -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
+        attractorMesh.scale(0.995);
+      }
+      bodyEffectChain.process(bodyMesh, sceneTime);
     }
 
-    if (sceneTime >= particlesSlowRippleEvent &&
-        sceneTime <= rippleSpeedUpEvent) {
-      attractorSpeedScene1 = 0.00005;
-      mainAttractor.processThomas(attractorMesh, sceneTime,
-                                  attractorSpeedScene1);
-      attractorMesh.translate(
-
-          0, 5 * 0.00005, -5 * 0.00005);
-    }
-
-    if (sceneTime >= rippleSpeedUpEvent && sceneTime <= stopSpeedUpEvent) {
-      attractorSpeedScene1 = 0.00015;
-      mainAttractor.processThomas(attractorMesh, sceneTime,
-                                  attractorSpeedScene1);
-      attractorMesh.translate(
-
-          0, 5 * 0.0001, -5 * 0.0001);
-    }
-    if (sceneTime >= stopSpeedUpEvent && sceneTime <= moveInEvent) {
-      attractorSpeedScene1 = 0.00001;
-      mainAttractor.processThomas(attractorMesh, sceneTime,
-                                  attractorSpeedScene1);
-      attractorMesh.translate(
-
-          0, 0, -15 * 0.0002);
-    }
-
-    if (sceneTime >= stopSpeedUpEvent) {
-      attractorSpeedScene1 = 0.00005;
-      mainAttractor.processThomas(attractorMesh, sceneTime,
-                                  attractorSpeedScene1);
-      // attractorMesh.translate(
-
-      //     0, 0, -10 * 0.0002);
-      // mainEffectChain.process(attractorMesh, sceneTime); //ripple
-      // commented out
+    if (isPrimary()) {
+      for (int i = 0; i < attractorMesh.vertices().size(); i++)
+        state().scene1Mesh[i] = attractorMesh.vertices()[i];
+    } else {
+      for (int i = 0; i < attractorMesh.vertices().size(); i++)
+        attractorMesh.vertices()[i] = state().scene1Mesh[i];
     }
 
     attractorMesh.update();
-    // body mesh effects
-    if (sceneTime >= bodyCloudAppear) {
-      if (bodyAlphaIncScene1 < 1.0) {
-        bodyAlphaIncScene1 += 0.0000000000000001;
-      }
-    }
-    if (sceneTime >= moveInEvent) {
-      attractorSpeedScene1 = 0.0000001;
-      mainAttractor.processThomas(attractorMesh, sceneTime,
-                                  attractorSpeedScene1);
-      bodyScatter.setParams(3.5, 20.0);
-      bodyScatter.triggerIn(true);
-
-      attractorMesh.translate(
-
-          -50 * 0.0001, 100.5 * 0.0001, -80.0 * 0.0001);
-      attractorMesh.scale(0.995);
-    }
-
-    bodyEffectChain.process(bodyMesh, sceneTime);
     bodyMesh.update();
 
     // SCENE 1 ANIMATE END
