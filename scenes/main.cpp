@@ -1133,6 +1133,72 @@ public:
   void animateScene6(double dt) {
     if (isPrimary()) {
 
+      if (sceneTime < 10.0f) {
+        jelliesSpeedScene6 = 0.3f;
+        scene6Boundary = 15.0f;
+
+      } else if (sceneTime < 60.0f) {
+        jelliesSpeedScene6 = 3.0f;
+        scene6Boundary = 15.0f;
+
+      } else if (sceneTime < 64.0f) {
+        jelliesSpeedScene6 = 5.5f;
+        scene6Boundary = 16.0f;
+
+      } else if (sceneTime < 86.0f) {
+        jelliesSpeedScene6 = 1.0f;
+        scene6Boundary = 14.0f;
+
+      } else if (sceneTime < 94.0f) {
+        jelliesSpeedScene6 = 6.5f;
+        scene6Boundary = 25.0f;
+
+      } else if (sceneTime < 108.0f) {
+        jelliesSpeedScene6 = 0.8f;
+        scene6Boundary = 10.0f;
+
+      } else if (sceneTime < 135.0f) {
+        jelliesSpeedScene6 = 0.3f;
+        scene6Boundary = 5.0f;
+
+      } else if (sceneTime < 155.0f) {
+        jelliesSpeedScene6 = 4.0f;
+        scene6Boundary = 18.0f;
+
+      } else if (sceneTime < 265.0f) {
+        jelliesSpeedScene6 = 0.2f;
+        scene6Boundary = 2.0f;
+
+      } else if (sceneTime < 300.0f) {
+        jelliesSpeedScene6 = 3.2f;
+        scene6Boundary = 20.0f;
+
+      } else if (sceneTime < 372.0f) {
+        jelliesSpeedScene6 = 6.0f;
+        scene6Boundary = 14.0f;
+
+      } else if (sceneTime < 405.0f) {
+        jelliesSpeedScene6 = 4.0f;
+        scene6Boundary = 10.0f;
+
+      } else if (sceneTime < 440.0f) {
+        jelliesSpeedScene6 = 2.2f;
+        scene6Boundary = 6.0f;
+
+      } else if (sceneTime < 470.0f) {
+        jelliesSpeedScene6 = 3.5f;
+        scene6Boundary = 14.0f;
+
+      } else if (sceneTime < 495.0f) {
+        jelliesSpeedScene6 = 1.0f;
+        scene6Boundary = 8.0f;
+
+      } else {
+
+        jelliesSpeedScene6 = 0.2f;
+        scene6Boundary = 60; // slow dissolve out
+      }
+
       for (int i = 0; i < jellies.size(); ++i) {
         float t = globalTime + i * 10.0f;
         float wobbleAmount = 0.01f * std::sin(t * 0.7f);
