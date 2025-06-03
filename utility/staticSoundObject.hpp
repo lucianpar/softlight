@@ -27,6 +27,8 @@ public:
       io.out(0) += sampleValue;
       io.out(1) += sampleValue;
 
+      // io.bus(0) += sampleValue;
+
       // io.out(47) += sampleValue;
     }
     if (mSource.done()) {

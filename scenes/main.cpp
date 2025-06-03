@@ -1215,13 +1215,23 @@ public:
         mSequencer6.render(io);
       }
 
+      // Joels idea to put sub routing before spatialization? this seems to seg
+      // fault comment it out if it breaks things for (unsigned sample = 0;
+      // sample < io.framesPerBuffer(); sample++) {
+      //   io.out(47, sample) = io.out(0);
+      // }
+      // comment this version out of it breaks things
+      while (io()) {
+        io.out(47) = io.out(0); // io.bus(0) * 0.5;
+      }
+
       spatializer->renderBuffer(io, {0, 0, 0}, io.outBuffer(0),
                                 io.framesPerBuffer());
       spatializer->finalize(io);
 
-      while (io()) {
-        io.out(47) = io.out(0) * 0.5;
-      }
+      // while (io()) {
+      //   io.out(47) = io.out(0); // io.bus(0) * 0.5;
+      // }
     }
   }
 
