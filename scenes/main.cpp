@@ -52,7 +52,7 @@
 
 #define nAgentsScene2 30
 
-#define MAX_JELLIES 6
+#define MAX_JELLIES 14
 
 std::string slurp(const std::string &fileName);
 
@@ -1126,13 +1126,14 @@ public:
 
   void animateScene6(double dt) {
     if (isPrimary()) {
+
       for (int i = 0; i < jellies.size(); ++i) {
         float t = globalTime + i * 10.0f;
         float wobbleAmount = 0.01f * std::sin(t * 0.7f);
         jellies[i].turnF(0.004f + wobbleAmount);
         if (jellies[i].pos().mag() > scene6Boundary.get())
           jellies[i].faceToward(al::Vec3f(0), 0.005f);
-        jellies[i].moveF(jelliesSpeedScene6.get() * 8.0);
+        jellies[i].moveF(jelliesSpeedScene6.get() * 2.0);
         jellies[i].step(dt);
 
         state().jellyX[i] = jellies[i].pos().x;
@@ -1148,7 +1149,8 @@ public:
             0.05f * std::sin(sceneTime * 2.0); // move back outside is primary
 
         // move back outside is primary?
-        jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
+        jellyPulse.setParams(scene6pulseSpeed / 2.0, scene6pulseAmount * 2.5,
+                             1);
         jellyEffectChain.process(jellyCreatureMesh, sceneTime);
         jellyCreatureMesh.update();
       }
