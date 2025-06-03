@@ -26,6 +26,8 @@ public:
       float sampleValue = mSource() * 0.3; // temporary fix
       io.out(0) += sampleValue;
       io.out(1) += sampleValue;
+
+      io.out(47) += sampleValue;
     }
     if (mSource.done()) {
       free();
