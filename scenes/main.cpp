@@ -215,8 +215,10 @@ public:
   // PARAMS
 
   // Creature creature;
+  // std::vector<al::Vec3f> colorPallete = {
+  //     {0.9f, 0.0f, 0.4}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
   std::vector<al::Vec3f> colorPallete = {
-      {0.9f, 0.0f, 0.4}, {0.11, 0.2, 0.46}, {0.11, 0.44, 0.46}};
+      {0.9f, 0.0f, 0.4}, {0.8, 0.0, 0.46}, {0.969, 0.478, 0.102}};
 
   al::ParameterBool inSphereScene2{"inSphereScene2", "2", true};
   al::Parameter blobSeperationThresh{"blobSeperationThresh", "2", 2.0, 0.0,
@@ -996,10 +998,10 @@ public:
         scene2Boundary = 2.0f; // Ultra-tight presence
       } else if (sceneTime < windFinalSlowdown) {
         targetSpeedScene2 = 0.5f;
-        scene2Boundary = 4.0f;
+        scene2Boundary = 10.0f;
       } else {
-        targetSpeedScene2 = 0.001f;
-        scene2Boundary = 60.0f; // Full release drift
+        targetSpeedScene2 = 0.5f;
+        scene2Boundary = 800.0f; // Full release drift
         // blobsEffectChain.clear(); // Optional: end FX
       }
     }
@@ -1014,8 +1016,7 @@ public:
           blobs[i].moveF(blobSizeScene2);
         }
         // for setting state for renderers
-        blobs[i].moveF(currentSpeedScene2 * 30.0f *
-                       20.0f); // use smoothed speed
+        blobs[i].moveF(targetSpeedScene2 * 15.0f); // use smoothed speed
         blobs[i].step(dt);
         state().blobPosX[i] = blobs[i].pos().x;
         state().blobPosY[i] = blobs[i].pos().y;
