@@ -70,6 +70,7 @@ struct Common {
 
   // scene 1
   al::Vec3f scene1Mesh[10000];
+  al::Vec3f scene1BodyMesh[10000];
 
   // scene 2
   float blobPosX[nAgentsScene2];
@@ -832,9 +833,13 @@ public:
     if (isPrimary()) {
       for (int i = 0; i < attractorMesh.vertices().size(); i++)
         state().scene1Mesh[i] = attractorMesh.vertices()[i];
+      for (int i = 0; i < bodyMesh.vertices().size(); i++)
+        state().scene1BodyMesh[i] = bodyMesh.vertices()[i];
     } else {
       for (int i = 0; i < attractorMesh.vertices().size(); i++)
         attractorMesh.vertices()[i] = state().scene1Mesh[i];
+      for (int i = 0; i < bodyMesh.vertices().size(); i++)
+        bodyMesh.vertices()[i] = state().scene1BodyMesh[i];
     }
 
     attractorMesh.update();
@@ -1213,6 +1218,10 @@ public:
       spatializer->renderBuffer(io, {0, 0, 0}, io.outBuffer(0),
                                 io.framesPerBuffer());
       spatializer->finalize(io);
+
+      while (io()) {
+        io.out(47) = io.out(0) * 0.5;
+      }
     }
   }
 
