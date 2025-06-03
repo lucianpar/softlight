@@ -52,6 +52,8 @@
 
 #define nAgentsScene2 30
 
+#define MAX_JELLIES 6
+
 std::string slurp(const std::string &fileName);
 
 al::Vec3f randomVec3f(float scale) {
@@ -74,6 +76,16 @@ struct Common {
   float blobQuatX[nAgentsScene2];
   float blobQuatY[nAgentsScene2];
   float blobQuatZ[nAgentsScene2];
+
+  // scene 6
+  float flicker;
+  float jellyX[MAX_JELLIES];
+  float jellyY[MAX_JELLIES];
+  float jellyZ[MAX_JELLIES];
+  float jellyQuatW[MAX_JELLIES];
+  float jellyQuatX[MAX_JELLIES];
+  float jellyQuatY[MAX_JELLIES];
+  float jellyQuatZ[MAX_JELLIES];
 };
 
 class MyApp : public al::DistributedAppWithState<Common> {
@@ -259,6 +271,30 @@ public:
 
   //// SCENE 2 END DECLARATIONS ////
 
+  // SCENE 6 DECLARE START
+
+  al::VAOMesh jellyCreatureMesh;
+  std::vector<al::Nav> jellies;
+
+  // === Scene 6 PARAMETERS ===
+  al::Parameter scene6Boundary{"scene6Boundary", "", 50.0f, 0.0f, 100.0f};
+  al::ParameterBool inSphereScene6{"inSphereScene6", "", true};
+  al::Parameter jellieseperationThresh{"jellieseperationThresh", "", 4.0f, 0.0f,
+                                       20.0f};
+  al::Parameter jelliesSpeedScene6{"jelliesSpeedScene6", "", 3.0f, 0.0f, 10.0f};
+  al::Parameter jelliesizeScene2{"jelliesizeScene2", "", 5.0f, 0.0f, 20.0f};
+  al::Parameter pointSizeScene6{"pointSizeScene6", "", 2.5f, 0.1f, 10.0f};
+  al::Parameter scene6pulseSpeed{"scene6pulseSpeed", "", 0.4f, 0.0f, 5.0f};
+  al::Parameter scene6pulseAmount{"scene6pulseAmount", "", 0.2f, 0.0f, 5.0f};
+
+  // Scene 6 Effects
+  AutoPulseEffect jellyPulse;
+  RippleEffect jellyRippleY;
+  RippleEffect jellyRippleX;
+  VertexEffectChain jellyEffectChain;
+
+  /// SCENE 6 DECLARE END
+
   void onInit() override {
     gam::sampleRate(audioIO().framesPerSecond());
 
@@ -416,10 +452,10 @@ public:
     pointShader.compile(slurp(pointVertPath), slurp(pointFragPath),
                         slurp(pointGeomPath));
 
-    // cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
-    // if (!cuttleboneDomain) {
-    //   std::cerr << "ERRor: Cuttlebone not started" << std::endl;
-    // }
+    cuttleboneDomain = al::CuttleboneDomain<Common>::enableCuttlebone(this);
+    if (!cuttleboneDomain) {
+      std::cerr << "ERRor: Cuttlebone not started" << std::endl;
+    }
 
     nav().pos(al::Vec3d(0, 0, 0));
     // sequencer().playSequence();
@@ -446,6 +482,9 @@ public:
     shadedSphereScene5.setSphere(15.0, 20);
     shadedSphereScene5.setShaders(vertPathScene5, fragPathScene5);
     shadedSphereScene5.update();
+
+    // scene 6
+    createScene6();
 
     if (isPrimary()) {
       sequencer1().add<SoundObject>(0, 44000).set(
@@ -615,6 +654,7 @@ public:
       shadedSphereScene3.update();
       shadedSphereScene4.update();
       shadedSphereScene5.update();
+      // move these into conditions ^
 
       // scene 1
       if (sceneIndex == 1) {
@@ -622,6 +662,10 @@ public:
       }
       if (sceneIndex == 2) {
         animateScene2(dt);
+      }
+
+      if (sceneIndex == 6) {
+        animateScene6(dt);
       }
     }
   }
@@ -664,6 +708,10 @@ public:
         shadedSphereScene5.setUniformFloat("u_time", sceneTime);
 
         shadedSphereScene5.draw(g);
+      }
+
+      if (sceneIndex == 6) {
+        drawScene6(g);
       }
     }
   }
@@ -1025,6 +1073,105 @@ public:
                 0.4 + (sin(sceneTime * 0.6) * 0.1));
         g.draw(starCreatureMesh);
       }
+      g.popMatrix();
+    }
+  }
+
+  void createScene6() {
+    creature.makeJellyfish(jellyCreatureMesh, 0.6f, 72, 48, 8, 40, 40, 4.0f,
+                           0.25f, 5.5f, 1.0f);
+    for (int i = 0; i < jellyCreatureMesh.vertices().size(); ++i) {
+      jellyCreatureMesh.color(1.0, 1, 1, 1);
+      jellyCreatureMesh.texCoord(1.0f, 0.0f);
+    }
+    jellyCreatureMesh.scale(jelliesizeScene2);
+    jellyCreatureMesh.primitive(al::Mesh::POINTS);
+    jellyCreatureMesh.generateNormals();
+    jellyPulse.setBaseMesh(jellyCreatureMesh.vertices());
+    jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
+    jellyEffectChain.pushBack(&jellyPulse);
+    jellyCreatureMesh.update();
+
+    for (int b = 0; b < MAX_JELLIES; ++b) {
+      al::Nav p;
+      p.pos() = randomVec3f(5);
+      p.quat()
+          .set(al::rnd::uniformS(), al::rnd::uniformS(), al::rnd::uniformS(),
+               al::rnd::uniformS())
+          .normalize();
+      jellies.push_back(p);
+      state().jellyX[b] = p.pos().x;
+      state().jellyY[b] = p.pos().y;
+      state().jellyZ[b] = p.pos().z;
+      state().jellyQuatW[b] = p.quat().w;
+      state().jellyQuatX[b] = p.quat().x;
+      state().jellyQuatY[b] = p.quat().y;
+      state().jellyQuatZ[b] = p.quat().z;
+    }
+  }
+
+  void animateScene6(double dt) {
+    if (isPrimary()) {
+      for (int i = 0; i < jellies.size(); ++i) {
+        float t = globalTime + i * 10.0f;
+        float wobbleAmount = 0.01f * std::sin(t * 0.7f);
+        jellies[i].turnF(0.004f + wobbleAmount);
+        if (jellies[i].pos().mag() > scene6Boundary.get())
+          jellies[i].faceToward(al::Vec3f(0), 0.005f);
+        jellies[i].moveF(jelliesSpeedScene6.get() * 8.0);
+        jellies[i].step(dt);
+
+        state().jellyX[i] = jellies[i].pos().x;
+        state().jellyY[i] = jellies[i].pos().y;
+        state().jellyZ[i] = jellies[i].pos().z;
+        state().jellyQuatW[i] = jellies[i].quat().w;
+        state().jellyQuatX[i] = jellies[i].quat().x;
+        state().jellyQuatY[i] = jellies[i].quat().y;
+        state().jellyQuatZ[i] = jellies[i].quat().z;
+
+        state().flicker =
+            0.25f +
+            0.05f * std::sin(sceneTime * 2.0); // move back outside is primary
+
+        // move back outside is primary?
+        jellyPulse.setParams(scene6pulseSpeed, scene6pulseAmount, 1);
+        jellyEffectChain.process(jellyCreatureMesh, sceneTime);
+        jellyCreatureMesh.update();
+      }
+    }
+    if (!isPrimary()) {
+      for (int i = 0; i < jellies.size(); ++i) {
+        jellies[i].pos().set(state().jellyX[i], state().jellyY[i],
+                             state().jellyZ[i]);
+        jellies[i].quat().set(state().jellyQuatW[i], state().jellyQuatX[i],
+                              state().jellyQuatY[i], state().jellyQuatZ[i]);
+      }
+    }
+  }
+
+  void drawScene6(al::Graphics &g) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    g.depthTesting(true);
+    g.clear(0.1, 0.0, 0.3);
+    g.lighting(true);
+    light.globalAmbient(al::RGB(1.0, 1.0, 1.0));
+    light.ambient(al::RGB(1.0, 1.0, 1.0));
+    light.diffuse(al::RGB(1, 1, 1.0));
+    g.light(light);
+    material.specular(1.0);
+    material.shininess(200);
+    g.material(material);
+    g.pointSize(pointSizeScene6.get());
+
+    for (int i = 0; i < jellies.size(); ++i) {
+      g.pushMatrix();
+      g.translate(state().jellyX[i], state().jellyY[i], state().jellyZ[i]);
+      g.rotate(al::Quatf(state().jellyQuatW[i], state().jellyQuatX[i],
+                         state().jellyQuatY[i], state().jellyQuatZ[i]));
+      g.pointSize(2.0);
+      g.color(1.0f, 0.4f, 0.7f, state().flicker);
+      g.draw(jellyCreatureMesh);
       g.popMatrix();
     }
   }

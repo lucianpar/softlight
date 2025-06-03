@@ -76,13 +76,13 @@ public:
   Creature creature;
 
   // === Scene 6 PARAMETERS ===
-  al::Parameter scene2Boundary{"scene2Boundary", "", 50.0f, 0.0f, 100.0f};
-  al::ParameterBool inSphereScene2{"inSphereScene2", "", true};
+  al::Parameter scene6Boundary{"scene6Boundary", "", 50.0f, 0.0f, 100.0f};
+  al::ParameterBool inSphereScene6{"inSphereScene6", "", true};
   al::Parameter jellieseperationThresh{"jellieseperationThresh", "", 4.0f, 0.0f,
                                        20.0f};
-  al::Parameter jelliesSpeedScene2{"jelliesSpeedScene2", "", 3.0f, 0.0f, 10.0f};
+  al::Parameter jelliesSpeedScene6{"jelliesSpeedScene6", "", 3.0f, 0.0f, 10.0f};
   al::Parameter jelliesizeScene2{"jelliesizeScene2", "", 5.0f, 0.0f, 20.0f};
-  al::Parameter pointSize{"pointSize", "", 2.5f, 0.1f, 10.0f};
+  al::Parameter pointSizeScene6{"pointSizeScene6", "", 2.5f, 0.1f, 10.0f};
   al::Parameter scene6pulseSpeed{"scene6pulseSpeed", "", 0.4f, 0.0f, 5.0f};
   al::Parameter scene6pulseAmount{"scene6pulseAmount", "", 0.2f, 0.0f, 5.0f};
 
@@ -117,9 +117,9 @@ public:
     if (vert.valid())
       pointVertPath = vert.filepath();
 
-    parameterServer() << scene2Boundary << inSphereScene2
-                      << jellieseperationThresh << jelliesSpeedScene2
-                      << jelliesizeScene2 << pointSize << scene6pulseSpeed
+    parameterServer() << scene6Boundary << inSphereScene6
+                      << jellieseperationThresh << jelliesSpeedScene6
+                      << jelliesizeScene2 << pointSizeScene6 << scene6pulseSpeed
                       << scene6pulseAmount;
   }
 
@@ -176,9 +176,9 @@ public:
         float t = globalTime + i * 10.0f;
         float wobbleAmount = 0.01f * std::sin(t * 0.7f);
         jellies[i].turnF(0.004f + wobbleAmount);
-        if (jellies[i].pos().mag() > scene2Boundary.get())
+        if (jellies[i].pos().mag() > scene6Boundary.get())
           jellies[i].faceToward(al::Vec3f(0), 0.005f);
-        jellies[i].moveF(jelliesSpeedScene2.get() * 8.0);
+        jellies[i].moveF(jelliesSpeedScene6.get() * 8.0);
         jellies[i].step(dt);
 
         state().jellyX[i] = jellies[i].pos().x;
@@ -225,7 +225,7 @@ public:
       material.specular(1.0);
       material.shininess(200);
       g.material(material);
-      g.pointSize(pointSize.get());
+      g.pointSize(pointSizeScene6.get());
 
       for (int i = 0; i < jellies.size(); ++i) {
         g.pushMatrix();
