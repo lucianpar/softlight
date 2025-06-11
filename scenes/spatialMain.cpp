@@ -40,9 +40,11 @@
 // #include "../meshMorph.hpp"
 #include "../eoys-mesh-fx/scatter.hpp"
 #include "../eoys-mesh-fx/vfxMain.hpp"
-#include "../utility/loadAudioScene.hpp"
+// #include "../utility/loadAudioScene.hpp"
 #include "../utility/parseObj.hpp"
-#include "../utility/staticSoundObject.hpp"
+// #include "../utility/staticSoundObject.hpp"
+#include "../utility/soundObject.hpp"
+#include "../utility/spatialPaths.hpp"
 // #include "../imageToMesh.hpp"
 // #include "../imageToSphere.hpp"
 #include "../eoys-shader/shaderToSphere.hpp"
@@ -495,22 +497,23 @@ public:
     if (isPrimary()) {
       sequencer1().add<SoundObject>(0, 44000).set(
 
-          Song1Path.c_str());
-      sequencer2().add<SoundObject>(0, 44000).set(
+      // 1, 1, 1, true, Song1Path.c_str()),
+      // spatialPaths.ThomasAttractor();
+      // sequencer2().add<SoundObject>(0, 44000).set(
 
-          Song2Path.c_str());
-      sequencer3().add<SoundObject>(0, 44000).set(
+      //     Song2Path.c_str());
+      // sequencer3().add<SoundObject>(0, 44000).set(
 
-          Song3Path.c_str());
-      sequencer4().add<SoundObject>(0, 44000).set(
+      //     Song3Path.c_str());
+      // sequencer4().add<SoundObject>(0, 44000).set(
 
-          Song4Path.c_str());
-      sequencer5().add<SoundObject>(0, 44000).set(
+      //     Song4Path.c_str());
+      // sequencer5().add<SoundObject>(0, 44000).set(
 
-          Song5Path.c_str());
-      sequencer6().add<SoundObject>(0, 44000).set(
+      //     Song5Path.c_str());
+      // sequencer6().add<SoundObject>(0, 44000).set(
 
-          Song6Path.c_str());
+      //     Song6Path.c_str());
     }
   }
 

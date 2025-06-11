@@ -49,7 +49,7 @@ public:
                                   float m = 6.0f, float n1 = 0.3f,
                                   float n2 = 1.0f, float n3 = 1.0f) {
     float r = input.mag();
-    float theta = std::atan2(input.y, input.x);     // azimuth
+    float theta = std::atan2(input.y, input.x);     // azimuth attempt
     float phi = std::acos(input.z / (r + 0.0001f)); // polar angle
 
     float t = theta;
@@ -70,50 +70,50 @@ public:
     return output;
   }
 
-  al::Vec3f BacterialGrowth(al::Vec3f input, float time, float speed,
-                            float rMax = 2.0f, float growthRate = 1.0f,
-                            float noiseScale = 0.1f) {
-    al::Vec3f output;
+  // al::Vec3f BacterialGrowth(al::Vec3f input, float time, float speed,
+  //                           float rMax = 2.0f, float growthRate = 1.0f,
+  //                           float noiseScale = 0.1f) {
+  //   al::Vec3f output;
 
-    float r = input.mag(); // Distance from origin (colony center)
+  //   float r = input.mag(); // Distance from origin (colony center)
 
-    // Logistic growth model
-    float dr =
-        growthRate * r * (1.0f - r / rMax); // classic dN/dt = rN(1 - N/K)
+  //   // Logistic growth model
+  //   float dr =
+  //       growthRate * r * (1.0f - r / rMax); // classic dN/dt = rN(1 - N/K)
 
-    // Optional undulating variation for natural look
-    float oscillation = sin(time + r) * noiseScale;
+  //   // Optional undulating variation for natural look
+  //   float oscillation = sin(time + r) * noiseScale;
 
-    // Apply outward growth
-    al::Vec3f direction = input.normalized();
-    float delta = (dr + oscillation) * time * speed;
+  //   // Apply outward growth
+  //   al::Vec3f direction = input.normalized();
+  //   float delta = (dr + oscillation) * time * speed;
 
-    output = input + direction * delta;
-    return output;
-  }
+  //   output = input + direction * delta;
+  //   return output;
+  // }
 
-  al::Vec3f FlameAttractor(al::Vec3f input, float time, float speed,
-                           float swirlFreq = 4.0f, float swirlAmp = 0.2f,
-                           float riseSpeed = 1.0f, float decay = 0.1f) {
-    al::Vec3f output;
+  // al::Vec3f FlameAttractor(al::Vec3f input, float time, float speed,
+  //                          float swirlFreq = 4.0f, float swirlAmp = 0.2f,
+  //                          float riseSpeed = 1.0f, float decay = 0.1f) {
+  //   al::Vec3f output;
 
-    float x = input.x;
-    float y = input.y;
-    float z = input.z;
+  //   float x = input.x;
+  //   float y = input.y;
+  //   float z = input.z;
 
-    // Swirling lateral motion using sine waves
-    float swirlX = sin(y * swirlFreq + time) * swirlAmp;
-    float swirlZ = cos(y * swirlFreq + time) * swirlAmp;
+  //   // Swirling lateral motion using sine waves
+  //   float swirlX = sin(y * swirlFreq + time) * swirlAmp;
+  //   float swirlZ = cos(y * swirlFreq + time) * swirlAmp;
 
-    // Vertical rise decays with height
-    float lift = riseSpeed * exp(-decay * y);
+  //   // Vertical rise decays with height
+  //   float lift = riseSpeed * exp(-decay * y);
 
-    output.x = x + swirlX * time * speed;
-    output.y = y + lift * time * speed;
-    output.z = z + swirlZ * time * speed;
+  //   output.x = x + swirlX * time * speed;
+  //   output.y = y + lift * time * speed;
+  //   output.z = z + swirlZ * time * speed;
 
-    return output;
-  }
+  //   return output;
+  // }
 };
 
 #endif
