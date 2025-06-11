@@ -494,11 +494,23 @@ public:
     // scene 6
     createScene6();
 
+    double g = 0.7;
+    float a = 1.4;
+    float b = 1.6;
+    float c = 1.0;
+    float d = 0.7;
+
     if (isPrimary()) {
       sequencer1().add<SoundObject>(0, 44000).set(
 
-      // 1, 1, 1, true, Song1Path.c_str()),
-      // spatialPaths.ThomasAttractor();
+          1, 1, 1, 0.1, true, Song1Path.c_str(),
+          [&](double t, const al::Vec3f &p) -> al::Vec3f {
+            return al::Vec3f(
+                // body of lambda logic. will replace this will header calls
+                (sin(a * p.y) + c * cos(a * p.x)),
+                (sin(b * p.x) + d * cos(b * p.y)), p.z);
+          });
+
       // sequencer2().add<SoundObject>(0, 44000).set(
 
       //     Song2Path.c_str());
@@ -1286,9 +1298,9 @@ public:
         mSequencer6.render(io);
       }
 
-      // Joels idea to put sub routing before spatialization? this seems to seg
-      // fault comment it out if it breaks things for (unsigned sample = 0;
-      // sample < io.framesPerBuffer(); sample++) {
+      // Joels idea to put sub routing before spatialization? this seems to
+      // seg fault comment it out if it breaks things for (unsigned sample =
+      // 0; sample < io.framesPerBuffer(); sample++) {
       //   io.out(47, sample) = io.out(0);
       // }
       // comment this version out of it breaks things
