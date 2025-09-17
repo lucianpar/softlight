@@ -1,9 +1,7 @@
 # softlight
 
-Generative visuals toolkit in **C++ + GLSL** for creating shader-driven scenes, mesh effects, and artful motion studies. Used for live audio visual album instillation, "spinning through softlight" in the AlloSphere.
+Generative visuals toolkit in **C++ + GLSL** for live audio visual album instillation, "spinning through softlight" in the AlloSphere.
 https://youtu.be/iq5s6EcoII4?si=OcqIv_SzAm7NA1MY
-
-> This repo collects reusable shader code, mesh/scene experiments, and example sketches suitable for live visuals, installations, and research demos.
 
 ## Features
 - **Shader library**: modular GLSL snippets for materials, post, and FX.
