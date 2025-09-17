@@ -3,6 +3,8 @@
 Generative visuals toolkit in **C++ + GLSL** for live audio visual album instillation, "spinning through softlight" in the AlloSphere.
 https://youtu.be/iq5s6EcoII4?si=OcqIv_SzAm7NA1MY
 
+Project is built upon the Allolib framework.
+
 ## Features
 - **Shader library**: modular GLSL snippets for materials, post, and FX.
 - **Mesh effects**: vertex/geometry manipulations for organic motion.
